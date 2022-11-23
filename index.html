@@ -1,0 +1,282 @@
+<html>
+  <head>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      function loadLocale(){
+        var sourceUrl = "https://raw.githubusercontent.com/organicmaps/organicmaps/7551fa46c89f85d551015fccb7e0e13dfebd13de/data/sound-strings/"+$("#localeSelect").val()+".json/localize.json";
+        var fancyUrl = "https://github.com/organicmaps/organicmaps/blob/7551fa46c89f85d551015fccb7e0e13dfebd13de/data/sound-strings/"+$("#localeSelect").val()+".json/localize.json"
+
+        $("#sourceUrl").attr("href", fancyUrl);
+
+        $.getJSON(sourceUrl, function(data){
+
+          const distance = [
+            "in_50_meters",
+            "in_100_meters",
+            "in_200_meters",
+            "in_250_meters",
+            "in_300_meters",
+            "in_400_meters",
+            "in_500_meters",
+            "in_600_meters",
+            "in_700_meters",
+            "in_750_meters",
+            "in_800_meters",
+            "in_900_meters",
+            "in_1_kilometer",
+            "in_1_5_kilometers",
+            "in_2_kilometers",
+            "in_2_5_kilometers",
+            "in_3_kilometers",
+            "in_50_feet",
+            "in_100_feet",
+            "in_200_feet",
+            "in_300_feet",
+            "in_400_feet",
+            "in_500_feet",
+            "in_600_feet",
+            "in_700_feet",
+            "in_800_feet",
+            "in_900_feet",
+            "in_1000_feet",
+            "in_1500_feet",
+            "in_2000_feet",
+            "in_2500_feet",
+            "in_3000_feet",
+            "in_3500_feet",
+            "in_4000_feet",
+            "in_4500_feet",
+            "in_5000_feet",
+            "in_1_mile",
+            "in_1_5_miles",
+            "in_2_miles"
+          ];
+
+          const direction = [
+            "take_the_1_exit",
+            "take_the_2_exit",
+            "take_the_3_exit",
+            "take_the_4_exit",
+            "take_the_5_exit",
+            "take_the_6_exit",
+            "take_the_7_exit",
+            "take_the_8_exit",
+            "take_the_9_exit",
+            "take_the_10_exit",
+            "take_the_11_exit",
+            "make_a_slight_right_turn",
+            "make_a_right_turn",
+            "make_a_sharp_right_turn",
+            "enter_the_roundabout",
+            "leave_the_roundabout",
+            "make_a_slight_left_turn",
+            "make_a_left_turn",
+            "make_a_sharp_left_turn",
+            "make_a_u_turn",
+            "go_straight",
+            "exit",
+            "destination"
+          ];
+
+          // dist_direction_onto_street
+          // then
+          // you_have_reached_the_destination
+          // unknown_camera
+
+          $("#out-a").text("");
+          $("#out-b").text("");
+          $("#out-c").text("");
+          $("#out-d").text("");
+          $("#out-e").text("");
+          $("#out-f").text("");
+          $("#out-g").text("");
+
+          $.each(direction, function(i, dir){
+            // can't "you'll arrive" in the present tense
+            if (dir != "destination") {
+              $("#out-a").append(data[dir] + "\r\n");
+            }
+          });
+
+          $.each(direction, function(i, dir){
+            // can't "then" past your destination
+            if (dir != "destination") {
+              var nextDir = direction[(i + 1) % direction.length];
+              $("#out-b").append(data[dir] + " " + data['then'] + " " + data[nextDir] + "\r\n");
+            }
+          });
+
+          $.each(distance, function(i, dist){
+            var dir = direction[i % direction.length];
+            $("#out-c").append(data[dist] + " " + data[dir] + "\r\n");
+          });
+
+          $.each(distance, function(i, dist){
+            var dir = direction[i % direction.length];
+            // can't "then" past your destination
+            if (dir != "destination") {
+              var nextDir = direction[(i + 1) % direction.length];
+              $("#out-d").append(data[dist] + " " + data[dir] + " " + data['then'] + " " + data[nextDir] + "\r\n");
+            }
+          });
+
+          $.each(distance, function(i, dist){
+            var dir = direction[i % direction.length];
+            var nextDir = direction[(i + 1) % direction.length];
+            var ttsFmt = data['dist_direction_onto_street'];
+
+            ttsFmt = ttsFmt.replace("%1$s", data[dist].replace(/[\.。।]/g, "")); // no full stops
+            ttsFmt = ttsFmt.replace("%2$s", data[dir].replace(/[\.。।]/g, "")); // no full stops
+            ttsFmt = ttsFmt.replace("%3$s", "Main Street");
+
+            $("#out-e").append( ttsFmt + "\r\n");
+          });
+
+          $.each(distance, function(i, dist){
+            var dir = direction[i % direction.length];
+            var nextDir = direction[(i + 1) % direction.length];
+            var ttsFmt = data['dist_direction_onto_street'];
+
+            ttsFmt = ttsFmt.replace("%1$s", data[dist].replace(/[\.。।]/g, "")); // no full stops
+            ttsFmt = ttsFmt.replace("%2$s", data[dir].replace(/[\.。।]/g, "")); // no full stops
+            ttsFmt = ttsFmt.replace("%3$s", "Main Street");
+
+            $("#out-f").append( ttsFmt + " " + data['then'] + " " + data[nextDir] + "\r\n");
+          });
+
+          $("#out-g").append(data['you_have_reached_the_destination'] + "\r\n");
+          $("#out-g").append(data['unknown_camera'] + "\r\n");
+
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div style="float: right; width: 19%">
+      Locale file:
+      <select id="localeSelect">
+        <option value="ar">ﺎﻠﻋﺮﺒﻳﺓ</option>
+        <option value="be">Беларусь</option>
+        <option value="ca">Català</option>
+        <option value="cs">Čeština</option>
+        <option value="da">Dansk</option>
+        <option value="de">Deutsch</option>
+        <option value="el">Ελληνικά</option>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="eu">Euskara</option>
+        <option value="fa">ﻑﺍﺮﺴﯾ</option>
+        <option value="fi">Suomi</option>
+        <option value="fr">Français</option>
+        <option value="hi">हिंदी</option>
+        <option value="hr">Hrvatski</option>
+        <option value="hu">Magyar</option>
+        <option value="id">Indonesia</option>
+        <option value="it">Italiano</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="mr">मराठी</option>
+        <option value="nl">Nederlands</option>
+        <option value="pl">Polski</option>
+        <option value="pt">Português</option>
+        <option value="ro">Română</option>
+        <option value="ru">Русский</option>
+        <option value="sk">Slovenčina</option>
+        <option value="sv">Svenska</option>
+        <option value="sw">Kiswahili</option>
+        <option value="th">ภาษาไทย</option>
+        <option value="tr">Türkçe</option>
+        <option value="uk">Українська</option>
+        <option value="vi">Tiếng Việt</option>
+        <option value="zh-Hans">中文简体</option>
+        <option value="zh-Hant">中文繁體</option>
+      </select><br/><br/>
+      TTS Voice: <select id="voiceSelect"></select><br/><br/>
+      <button type="button" id='myvoice'>Highlight text and click to play</button><br/><br/>
+      <a id="sourceUrl" href="#" target="_blank">View Source File</a>
+    </div>
+    <textarea style="width: 80%; height: 27em" id="out-a"></textarea>
+    <textarea style="width: 80%; height: 27em" id="out-b"></textarea>
+    <textarea style="width: 80%; height: 27em" id="out-c"></textarea>
+    <textarea style="width: 80%; height: 27em" id="out-d"></textarea>
+    <textarea style="width: 80%; height: 27em" id="out-e"></textarea>
+    <textarea style="width: 80%; height: 27em" id="out-f"></textarea>
+    <textarea style="width: 80%; height: 27em" id="out-g"></textarea>
+
+    <script type="text/javascript">
+      const listenBtn = document.getElementById('myvoice');
+      const synth = window.speechSynthesis;
+      var voices;
+
+      listenBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        var text = "";
+        if (window.getSelection) {
+            text = window.getSelection().toString();
+        } else if (document.selection && document.selection.type != "Control") {
+            text = document.selection.createRange().text;
+        }
+
+        const msg = new SpeechSynthesisUtterance(
+          text
+        );
+        msg.voice = voices[$("#voiceSelect").val()];
+        synth.speak(msg);
+
+      });
+
+      $(document).ready(function(){
+        voices = synth.getVoices();
+        $.each(voices, function(i, voice){
+          $("#voiceSelect").append('<option value="'+i+'" lang="'+voice.lang+'">'+voice.name+'</option>');
+        });
+        if (voices.length == 0) {
+          $("#voiceSelect").attr("disabled", "disabled");
+          $("#myvoice").text('Try another browser to use TTS').attr("disabled", "disabled");
+        }
+
+        let params = new URLSearchParams(document.location.search);
+        let lang = params.get("lang");
+        let tts = params.get("tts");
+
+        const userLocale =
+          navigator.languages && navigator.languages.length
+            ? navigator.languages[0]
+            : navigator.language;
+
+        if (lang) {
+          $("#localeSelect").val(lang);
+        } else {
+          $("#localeSelect option").each(function(i, o){
+            if (userLocale.match($(o).attr('value'))) {
+              $("#localeSelect").val($(o).attr('value'));
+            }
+          });
+        }
+        if (tts) {
+          $("#voiceSelect").val(tts);
+        } else {
+          $("#voiceSelect option").each(function(i, o){
+            if (userLocale.match($(o).attr('lang'))) {
+              $("#voiceSelect").val($(o).attr('value'));
+            }
+          });
+        }
+
+        $("#localeSelect").change(function(){
+          params.set('lang', $("#localeSelect").val());
+          document.location.search = params.toString();
+        });
+
+        $("#voiceSelect").change(function(){
+          params.set('tts', $("#voiceSelect").val());
+          document.location.search = params.toString();
+        });
+
+        loadLocale();
+      });
+
+    </script>
+  </body>
+</html>
