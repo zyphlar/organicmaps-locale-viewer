@@ -6,7 +6,7 @@
         var sourceUrl = "https://raw.githubusercontent.com/organicmaps/organicmaps/7551fa46c89f85d551015fccb7e0e13dfebd13de/data/sound-strings/"+$("#localeSelect").val()+".json/localize.json";
         var fancyUrl = "https://github.com/organicmaps/organicmaps/blob/7551fa46c89f85d551015fccb7e0e13dfebd13de/data/sound-strings/"+$("#localeSelect").val()+".json/localize.json"
 
-        $("#sourceUrl").attr("href", fancyUrl);
+        $("#sourceUrl").attr("href", fancyUrl).text($("#localeSelect").val()+".json");
 
         $.getJSON(sourceUrl, function(data){
 
@@ -193,7 +193,9 @@
       </select><br/><br/>
       TTS Voice: <select id="voiceSelect"></select><br/><br/>
       <button type="button" id='myvoice'>Highlight text and click to play</button><br/><br/>
-      <a id="sourceUrl" href="#" target="_blank">View Source File</a>
+      <a id="sourceUrl" href="#" target="_blank">json</a>
+      <a href="https://github.com/organicmaps/organicmaps/blob/b2011c6d72009b47c374291a977463443b4df885/data/strings/sound.txt" target="_blank">sound.txt</a>
+      <em>Please propose any fixes by editing sound.txt <br/>or by adding a comment to the <a href="https://github.com/organicmaps/organicmaps/pull/3130">pull request</a></em>
     </div>
     <textarea style="width: 80%; height: 27em" id="out-a"></textarea>
     <textarea style="width: 80%; height: 27em" id="out-b"></textarea>
