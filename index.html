@@ -1,6 +1,7 @@
 <html>
   <head>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script type="text/javascript">
       function loadLocale(){
         var sourceUrl = "https://raw.githubusercontent.com/organicmaps/organicmaps/5f7013eb5520d1c849342b0bfac2dd53fa428340/data/sound-strings/"+$("#localeSelect").val()+".json/localize.json";
@@ -78,23 +79,32 @@
             "destination"
           ];
 
+          const nextStreets = [
+            "Main Street",
+            "Highway 99",
+            "Exit 12, Main Street, London",
+          ];
+
           // dist_direction_onto_street
           // then
           // you_have_reached_the_destination
           // unknown_camera
 
-          $("#out-a").text("");
-          $("#out-b").text("");
-          $("#out-c").text("");
-          $("#out-d").text("");
-          $("#out-e").text("");
-          $("#out-f").text("");
-          $("#out-g").text("");
+          $("#out-a").html("");
+          $("#out-b").html("");
+          $("#out-c").html("");
+          $("#out-d").html("");
+          $("#out-e").html("");
+          $("#out-f").html("");
+          $("#out-g").html("");
+
+          var inputPre = "<div class='input-group mb-3'><button type='button' class='playtts btn btn-outline-secondary'>🔊</button><button class='editbutton btn btn-secondary' type='button'>Edit</button><button class='savebutton btn btn-success' style='display: none;' type='button'>Save</button><input class='form-control' disabled='disabled' type='text' value='";
+          var inputPost = "' /></div>";
 
           $.each(direction, function(i, dir){
             // can't "you'll arrive" in the present tense
             if (dir != "destination") {
-              $("#out-a").append(data[dir] + "\r\n");
+              $("#out-a").append(inputPre + data[dir] + inputPost);
             }
           });
 
@@ -102,13 +112,13 @@
             // can't "then" past your destination
             if (dir != "destination") {
               var nextDir = direction[(i + 1) % direction.length];
-              $("#out-b").append(data[dir] + " " + data['then'] + " " + data[nextDir] + "\r\n");
+              $("#out-b").append(inputPre + data[dir] + " " + data['then'] + " " + data[nextDir] + inputPost);
             }
           });
 
           $.each(distance, function(i, dist){
             var dir = direction[i % direction.length];
-            $("#out-c").append(data[dist] + " " + data[dir] + "\r\n");
+            $("#out-c").append(inputPre + data[dist] + " " + data[dir] + inputPost);
           });
 
           $.each(distance, function(i, dist){
@@ -116,7 +126,7 @@
             // can't "then" past your destination
             if (dir != "destination") {
               var nextDir = direction[(i + 1) % direction.length];
-              $("#out-d").append(data[dist] + " " + data[dir] + " " + data['then'] + " " + data[nextDir] + "\r\n");
+              $("#out-d").append(inputPre + data[dist] + " " + data[dir] + " " + data['then'] + " " + data[nextDir] + inputPost);
             }
           });
 
@@ -127,9 +137,9 @@
 
             ttsFmt = ttsFmt.replace("%1$s", data[dist].replace(/[\.。।]/g, "")); // no full stops
             ttsFmt = ttsFmt.replace("%2$s", data[dir].replace(/[\.。।]/g, "")); // no full stops
-            ttsFmt = ttsFmt.replace("%3$s", "Main Street");
+            ttsFmt = ttsFmt.replace("%3$s", nextStreets[(i+1) % nextStreets.length]);
 
-            $("#out-e").append( ttsFmt + "\r\n");
+            $("#out-e").append(inputPre + ttsFmt + inputPost);
           });
 
           $.each(distance, function(i, dist){
@@ -139,22 +149,95 @@
 
             ttsFmt = ttsFmt.replace("%1$s", data[dist].replace(/[\.。।]/g, "")); // no full stops
             ttsFmt = ttsFmt.replace("%2$s", data[dir].replace(/[\.。।]/g, "")); // no full stops
-            ttsFmt = ttsFmt.replace("%3$s", "Main Street");
+            ttsFmt = ttsFmt.replace("%3$s", nextStreets[(i+1) % nextStreets.length]);
 
-            $("#out-f").append( ttsFmt + " " + data['then'] + " " + data[nextDir] + "\r\n");
+            $("#out-f").append(inputPre + ttsFmt + " " + data['then'] + " " + data[nextDir] + inputPost);
           });
 
-          $("#out-g").append(data['you_have_reached_the_destination'] + "\r\n");
-          $("#out-g").append(data['unknown_camera'] + "\r\n");
+          $("#out-g").append(inputPre + data['you_have_reached_the_destination'] + inputPost);
+          $("#out-g").append(inputPre + data['unknown_camera'] + inputPost);
 
+          $(".editbutton").click(function(){
+            var sibling = $($(this).siblings(".form-control")[0]);
+            // console.log(sibling);
+            // console.log(sibling.val());
+            sibling.data("orig-value", sibling.val());
+            // console.log(sibling.data("orig-value"));
+            sibling.prop( "disabled", false );
+            sibling.focus();
+            $(this).hide();
+            $(this).siblings(".savebutton").show();
+          });
+          $(".savebutton").click(function(){
+            var changes = [];
+            var thisSaveButton = $(this);
+            var thisSibling = $($(this).siblings(".form-control")[0]);
+            thisSibling.prop( "disabled", true );
+            thisSaveButton.hide();
+            thisSaveButton.siblings(".editbutton").show();
+
+            $("div.output .form-control").each(function(i,o){
+              var sibling = $(o);
+              // console.log("orig",sibling.data("orig-value"));
+              // console.log("val",sibling.val());
+              if (sibling.data("orig-value") && sibling.data("orig-value") != sibling.val()) {
+                // console.log("got",sibling.val());
+                changes.push([sibling.data("orig-value"), sibling.val()]);
+              }
+            });
+
+            if (changes.length > 0){
+              var out = "";
+              var locale = $("#localeSelect").val();
+
+              $.each(changes, function(x,y){
+                // console.log(x,y);
+                out += "-    "+locale+" = "+y[0]+"\n"+
+                       "+    "+locale+" = "+y[1]+"\n"
+              });
+
+              // console.log("writing", out);
+              $("#submitpopup textarea").text("Translation change request:\n```\n"+
+                  "# data/strings/sound.txt\n"+
+                  out+"```"
+                );
+              $("#submitpopup").show();
+            }
+
+          });
+          // $("#closesubmitpopup").click(function(){
+          //   $("#submitpopup").hide();
+          // });
+          $('.copyToClipboard').click(function () {
+              $('#submitpopup textarea').select();
+              document.execCommand('copy');
+              $(this).addClass("btn-success").text("Copied!");
+          });
+
+          $(".playtts").click(function(){
+            var text = $($(this).siblings(".form-control")[0]).val();
+            const msg = new SpeechSynthesisUtterance(
+              text
+            );
+            msg.voice = voices[$("#voiceSelect").val()];
+            synth.speak(msg);
+          });
         });
       }
     </script>
+    <style type="text/css">
+      div.output .input-group { width: 55em; }
+      div.output {
+        margin-bottom: 1em;
+        padding-bottom: 1em;
+        border-bottom: 1px dashed;
+      }
+    </style>
   </head>
-  <body>
-    <div style="float: right; width: 19%">
+  <body style="padding: 1em;">
+    <div style="float: right; width: 25%">
       Locale file:
-      <select id="localeSelect">
+      <select id="localeSelect" class="form-control">
         <option value="ar">ﺎﻠﻋﺮﺒﻳﺓ</option>
         <option value="be">Беларусь</option>
         <option value="ca">Català</option>
@@ -194,42 +277,41 @@
         <option value="zh-Hans">中文简体</option>
         <option value="zh-Hant">中文繁體</option>
       </select><br/><br/>
-      TTS Voice: <select id="voiceSelect"></select><br/><br/>
-      <button type="button" id='myvoice'>Highlight text and click to play</button><br/><br/>
+      TTS Voice: <select id="voiceSelect" class="form-control"></select><br/><br/>
+
+      <!--
       <a id="sourceUrl" href="#" target="_blank">json</a><br/>
       <a href="https://github.com/organicmaps/organicmaps/blob/ada410b5825e2dfd7c1ed95d539292dcef7d09dc/data/strings/sound.txt" target="_blank">sound.txt</a><br/>
       <em>Please propose any fixes by editing sound.txt or by adding a comment to the <a href="https://github.com/organicmaps/organicmaps/pull/3130">pull request</a></em>
+      -->
+
+      <!-- position: absolute; z-index: 999; padding: 1em; box-shadow: 2px 2px 6px #999; top: 20%; left: 20%; width: 60%; background: white; border: 1px solid black;" -->
+      <div id="submitpopup" style="display: none;">
+        <h3>Copy this text: <button address="any text" class="btn btn-sm btn-primary copyToClipboard"><span>Copy</span></h3>
+        <textarea class="form-control" style="height: 20em;"></textarea>
+        <h5>Then, paste it into a new comment on <a href="https://github.com/organicmaps/organicmaps/pull/3130" target="_blank">this Github pull request</a></h5>
+        <!--
+        <p style="text-align: center; margin-top: 2em;">
+          <button id="closesubmitpopup" class="btn btn-danger">Done</button>
+        </p>
+        -->
+      </div>
     </div>
-    <textarea style="width: 80%; height: 27em" id="out-a"></textarea>
-    <textarea style="width: 80%; height: 27em" id="out-b"></textarea>
-    <textarea style="width: 80%; height: 27em" id="out-c"></textarea>
-    <textarea style="width: 80%; height: 27em" id="out-d"></textarea>
-    <textarea style="width: 80%; height: 27em" id="out-e"></textarea>
-    <textarea style="width: 80%; height: 27em" id="out-f"></textarea>
-    <textarea style="width: 80%; height: 27em" id="out-g"></textarea>
+
+    <div style="width: 74%; height: 55em; overflow: scroll; border: 1px solid #ccc; padding: 1em;">
+
+      <div class="output" id="out-e"></div>
+      <div class="output" id="out-f"></div>
+      <div class="output" id="out-g"></div>
+      <div class="output" id="out-a"></div>
+      <div class="output" id="out-b"></div>
+      <div class="output" id="out-c"></div>
+      <div class="output" id="out-d"></div>
+    </div>
 
     <script type="text/javascript">
-      const listenBtn = document.getElementById('myvoice');
       const synth = window.speechSynthesis;
       var voices;
-
-      listenBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        var text = "";
-        if (window.getSelection) {
-            text = window.getSelection().toString();
-        } else if (document.selection && document.selection.type != "Control") {
-            text = document.selection.createRange().text;
-        }
-
-        const msg = new SpeechSynthesisUtterance(
-          text
-        );
-        msg.voice = voices[$("#voiceSelect").val()];
-        synth.speak(msg);
-
-      });
 
       $(document).ready(function(){
         voices = synth.getVoices();
@@ -262,11 +344,23 @@
         if (tts) {
           $("#voiceSelect").val(tts);
         } else {
-          $("#voiceSelect option").each(function(i, o){
-            if (userLocale.match($(o).attr('lang'))) {
-              $("#voiceSelect").val($(o).attr('value'));
-            }
-          });
+          if (lang) {
+            $("#voiceSelect option").each(function(i, o){
+              // console.log(lang,$(o).attr('lang').substr(0,2));
+              if (lang.match($(o).attr('lang').substr(0,2))) {
+                // console.log("got it");
+                $("#voiceSelect").val($(o).attr('value'));
+                return false;
+              }
+            });
+          } else {
+            $("#voiceSelect option").each(function(i, o){
+              // console.log(userLocale,$(o).attr('lang'));
+              if (userLocale.match($(o).attr('lang'))) {
+                $("#voiceSelect").val($(o).attr('value'));
+              }
+            });
+          }
         }
 
         $("#localeSelect").change(function(){
@@ -285,3 +379,4 @@
     </script>
   </body>
 </html>
+
