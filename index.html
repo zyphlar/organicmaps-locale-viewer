@@ -222,6 +222,9 @@
             msg.voice = voices[$("#voiceSelect").val()];
             synth.speak(msg);
           });
+          if (window.hideTts) {
+            $(".playtts").hide();
+          }
         });
       }
     </script>
@@ -319,8 +322,8 @@
           $("#voiceSelect").append('<option value="'+i+'" lang="'+voice.lang+'">'+voice.name+'</option>');
         });
         if (voices.length == 0) {
-          $("#voiceSelect").attr("disabled", "disabled");
-          $("#myvoice").text('Try another browser to use TTS').attr("disabled", "disabled");
+          $("#voiceSelect").attr("disabled", "disabled").after('<em>Try another browser to use TTS, or install TTS support for this browser.</em>');
+          window.hideTts = true;
         }
 
         let params = new URLSearchParams(document.location.search);
