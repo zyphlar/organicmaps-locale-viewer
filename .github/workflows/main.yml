@@ -3,7 +3,7 @@ on:
 jobs: 
   create:
     name: create
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: open-issue
       uses: rishabhgupta/git-action-issue@05095a071ec1fa279fff18873b8de34366d38790
