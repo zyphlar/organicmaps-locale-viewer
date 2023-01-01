@@ -1,0 +1,13 @@
+on:
+  workflow_dispatch:
+jobs: 
+  create:
+    name: create
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: open-issue
+      uses: rishabhgupta/git-action-issue@05095a071ec1fa279fff18873b8de34366d38790
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        title: fff
+        body: fefefefe
