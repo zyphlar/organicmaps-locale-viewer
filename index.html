@@ -2,15 +2,224 @@
   <head>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 
     <style type="text/css">
-      input[type='text'][readonly] {
-        background: transparent;
-        color: white;
+      .badge {
+        --bs-badge-font-size: 0.9em;
+        --bs-badge-padding-y: 0.15em;
+      }
+
+      div.output .input-group { width: 55em; }
+      div.output {
+        margin-bottom: 1em;
+        padding-bottom: 1em;
+        border-bottom: 1px dashed;
+      }
+      .btn.btn-xs {
+        --bs-btn-padding-y: .25rem;
+        --bs-btn-padding-x: .5rem;
+        --bs-btn-font-size: .5rem;
+      }
+
+      .tranString.badge {
+        height: 2.5em;
+        margin: 0 0.1em;
+      }
+      .tranString input[type='text'] {
         border-collapse: collapse;
         border: none;
       }
+      .tranString input[type='text'][readonly] {
+        background: transparent;
+        color: white;
+      }
+      .wide { width: 18em; }
+      .narrow { width: 7em; }
+      .text-bg-warning { background-color: RGBA(183,138,2,var(--bs-bg-opacity,1)) !important }
     </style>
+  </head>
+  <body style="padding: 1em;">
+    <div style="position: fixed; top: 0; right: 0; width: 30%; z-index: 999; background: white; border: 1px solid gray; padding: 1em;">
+      <h5>Organic Maps Locale File Viewer</h5>
+      <p>Don't worry about adding or removing periods like <span class="badge bg-secondary">.</span> <span class="badge bg-secondary">。</span>(Japanese) or <span class="badge bg-secondary">।</span>(Hindi) at the end of strings. They will not affect the TTS speech either way.</p>
+      <h6>Locale language:</h6>
+      <select id="localeSelect" class="form-control">
+        <option value="ar">ﺎﻠﻋﺮﺒﻳﺓ</option>
+        <option value="be">Беларусь</option>
+        <option value="ca">Català</option>
+        <option value="cs">Čeština</option>
+        <option value="da">Dansk</option>
+        <option value="de">Deutsch</option>
+        <option value="el">Ελληνικά</option>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="es-MX">Español (MX)</option>
+        <option value="eu">Euskara</option>
+        <option value="fa">ﻑﺍﺮﺴﯾ</option>
+        <option value="fi">Suomi</option>
+        <option value="fr">Français</option>
+        <option value="hi">हिंदी</option>
+        <option value="hr">Hrvatski</option>
+        <option value="hu">Magyar</option>
+        <option value="id">Indonesia</option>
+        <option value="it">Italiano</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="mr">मराठी</option>
+        <option value="nb">Norsk</option>
+        <option value="nl">Nederlands</option>
+        <option value="pl">Polski</option>
+        <option value="pt">Português</option>
+        <option value="pt-BR">Português (BR)</option>
+        <option value="ro">Română</option>
+        <option value="ru">Русский</option>
+        <option value="sk">Slovenčina</option>
+        <option value="sv">Svenska</option>
+        <option value="sw">Kiswahili</option>
+        <option value="th">ภาษาไทย</option>
+        <option value="tr">Türkçe</option>
+        <option value="uk">Українська</option>
+        <option value="vi">Tiếng Việt</option>
+        <option value="zh-Hans">中文简体</option>
+        <option value="zh-Hant">中文繁體</option>
+      </select><br/>
+      <!--TTS Voice: <select id="voiceSelect" class="form-control"></select><br/><br/>-->
+
+      <!--
+      <a id="sourceUrl" href="#" target="_blank">json</a><br/>
+      <a href="https://github.com/organicmaps/organicmaps/blob/ada410b5825e2dfd7c1ed95d539292dcef7d09dc/data/strings/sound.txt" target="_blank">sound.txt</a><br/>
+      <em>Please propose any fixes by editing sound.txt or by adding a comment to the <a href="https://github.com/organicmaps/organicmaps/pull/3130">pull request</a></em>
+      -->
+
+      <!-- position: absolute; z-index: 999; padding: 1em; box-shadow: 2px 2px 6px #999; top: 20%; left: 20%; width: 60%; background: white; border: 1px solid black;" -->
+      <div id="submitpopup" style="display: none;">
+        <h3>Copy this text: <button address="any text" class="btn btn-sm btn-primary copyToClipboard"><span>Copy</span></h3>
+        <textarea class="form-control" style="height: 20em; font-family: monospace;"></textarea>
+        <h5>Then, paste it into a new comment on <a href="https://github.com/organicmaps/organicmaps/pull/3130" target="_blank">this Github pull request</a></h5>
+        <!--
+        <p style="text-align: center; margin-top: 2em;">
+          <button id="closesubmitpopup" class="btn btn-danger">Done</button>
+        </p>
+        -->
+      </div>
+    </div>
+
+    <div class="output" id="out-e"></div>
+    <div class="output" id="out-f"></div>
+    <div class="output" id="out-g"></div>
+    <div class="output" id="out-d"></div>
+    <div class="output" id="out-c"></div>
+    <div class="output" id="out-b"></div>
+    <div class="output" id="out-a"></div>
+
+    <script type="text/javascript">
+      const synth = window.speechSynthesis;
+      var voices;
+
+      function loadTts(){
+        voices = synth.getVoices();
+        $.each(voices, function(i, voice){
+          $("#voiceSelect").append('<option value="'+i+'" lang="'+voice.lang+'">'+voice.name+'</option>');
+        });
+        if (voices.length == 0) {
+          $("#voiceSelect").attr("disabled", "disabled").after('<em>Try another browser to use TTS, or install TTS support for this browser.</em>');
+          window.hideTts = true;
+        }
+
+        let params = new URLSearchParams(document.location.search);
+        let lang = params.get("lang");
+        let tts = params.get("tts");
+
+        const userLocale =
+          navigator.languages && navigator.languages.length
+            ? navigator.languages[0]
+            : navigator.language;
+
+        if (lang) {
+          $("#localeSelect").val(lang);
+        } else {
+          $("#localeSelect option").each(function(i, o){
+            if (userLocale.match($(o).attr('value'))) {
+              $("#localeSelect").val($(o).attr('value'));
+            }
+          });
+        }
+        if (tts) {
+          $("#voiceSelect").val(tts);
+        } else {
+          if (lang) {
+            $("#voiceSelect option").each(function(i, o){
+              // console.log(lang,$(o).attr('lang').substr(0,2));
+              if (lang.match($(o).attr('lang').substr(0,2))) {
+                // console.log("got it");
+                $("#voiceSelect").val($(o).attr('value'));
+                return false;
+              }
+            });
+          } else {
+            $("#voiceSelect option").each(function(i, o){
+              // console.log(userLocale,$(o).attr('lang'));
+              if (userLocale.match($(o).attr('lang'))) {
+                $("#voiceSelect").val($(o).attr('value'));
+              }
+            });
+          }
+        }
+
+        $("#localeSelect").change(function(){
+          showData();
+          params.set('lang', $("#localeSelect").val());
+          document.location.search = params.toString();
+        });
+
+        $("#voiceSelect").change(function(){
+          loadTts();
+          // params.set('tts', $("#voiceSelect").val());
+          // document.location.search = params.toString();
+        });
+
+        loadLocale();
+      }
+
+      $(document).ready(function(){ loadTts(); });
+
+    </script>
+
+    <div class="modal fade" id="fmtModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="fmtModalForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Edit Complex TTS String</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="exampleInputEmail1" class="form-label">TTS String</label>
+                <input type="text" class="form-control" id="fmtModalText" aria-describedby="fmtModalDesc">
+                <div id="fmtModalDesc" class="form-text">
+                  Formatter strings use numbered variables like <span class="badge bg-secondary">%1$s</span> to indicate parts that should be replaced by other text.
+                  <ul>
+                    <li><span class="badge text-bg-warning">%1$s</span> will be replaced by the distance, like "in 500 meters."</li>
+                    <li><span class="badge text-bg-primary">%2$s</span> will be replaced by the direction, like "make a right turn."</li>
+                    <li><span class="badge text-bg-info">%3$s</span> will be replaced by the name or number of the street or exit, like "Main Street" or "Exit 123."</li>
+                  </ul>
+                  For example "<span class="badge text-bg-warning">%1$s</span> <span class="badge text-bg-primary">%2$s</span> onto <span class="badge text-bg-info">%3$s</span>"<br/> becomes "<span class="badge text-bg-warning">In 500 meters</span> <span class="badge text-bg-primary">make a right turn</span> onto <span class="badge text-bg-info">Main Street</span>"<br/><br/>
+                  whereas "<span class="badge text-bg-info">%3$s</span> is the place to <span class="badge text-bg-primary">%2$s</span> when you reach it <span class="badge text-bg-warning">%1$s</span>"<br/> becomes "<span class="badge text-bg-info">Main Street</span> is the place to <span class="badge text-bg-primary">make a right turn</span> when you reach it <span class="badge text-bg-warning">in 500 meters</span>."
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <input type="submit" class="btn btn-primary" value="Save changes" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+
 
     <script type="text/javascript">
       function parseSoundTxt(raw) {
@@ -32,19 +241,164 @@
             }
             out[stringMatch[1]][thisSection] = stringMatch[2];
           } else {
-            console.log("no match:", line);
+            console.log("no text parser match:", line);
           }
         }
 
         return out;
       }
 
-      function buildTranStringInput(key, value) {
-        return "<span class='tranString badge text-bg-primary'><input type='text' class='stringTxt' readonly data-key='"+
+      function buildTranStringInput(key, value, color="text-bg-primary", editable=true) {
+        var classes = "stringTxt";
+        if (value.length > 22) {
+          classes += " wide";
+        } else if (value.length < 10) {
+          classes += " narrow";
+        }
+        
+        var out = "<span class='tranString badge "+color+"'><input type='text' class='"+classes+"' readonly data-key='"+
           key +
           "' value='" +
           value +
-          "'>&nbsp;&nbsp;<button class='editbutton btn btn-xs btn-light' type='button' style='display:none;'>✏️</button><button class='savebutton btn btn-xs btn-success' style='display: none;' type='button'>Save</button></span>";
+          "'>";
+
+          if (editable) {
+            out += "&nbsp;&nbsp;<button class='editbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button><button class='savebutton btn btn-xs btn-light text-success' style='display: none;' type='button'><i class='bi bi-check-lg'></i></button>";
+          }
+
+          out += "</span>";
+
+        return out;
+      }
+
+      function buildFmtStringInput(key, value, color="text-bg-primary", fmtKey, editable=true) {
+        var classes = "stringTxt";
+        console.log(fmtKey);
+        var out = "<span class='tranString badge "+color+"'><span type='text' class='"+classes+"' readonly data-key='"+
+          key +
+          "' data-fmtkey='" +
+          fmtKey +
+          "'>" +
+          value +
+          "</span>";
+
+          if (editable) {
+            out += "&nbsp;&nbsp;<button class='fmteditbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button>";
+          }
+
+          out += "</span>";
+
+        return out;
+      }
+
+      function loadEventHandlers(){
+
+        $(".tranString").hover(function(){
+          let editBtn = $(this).children(".editbutton");
+          if (editBtn.prop("disabled") == false) {
+            editBtn.show(); // only show when not disabled
+          }
+          let ttsEditBtn = $(this).children(".fmteditbutton");
+          if (ttsEditBtn.prop("disabled") == false) {
+            ttsEditBtn.show(); // only show when not disabled
+          }
+        }, function(){
+          $(this).children(".editbutton").hide();
+          $(this).children(".fmteditbutton").hide();
+        });
+
+        $(".stringTxt").on('keyup', function (e) {
+          if (e.key === 'Enter' || e.keyCode === 13) {
+            $(this).siblings(".savebutton").click();
+          }
+        }).dblclick(function(){
+          $(this).siblings(".editbutton").click();
+        }); 
+
+        $(".editbutton").click(function(){
+          $(this).siblings(".stringTxt").prop("readonly",false);
+          $(this).prop("disabled",true).hide();
+          $(this).siblings(".savebutton").show();
+        });
+
+        $(".fmteditbutton").click(function(){
+          // for dist_direction_onto_street only
+          $(document.getElementById('fmtModalText')).val(window.modifiedSoundData['dist_direction_onto_street']);
+          $("#fmtModal").modal('show');
+        });
+
+        $(".savebutton").click(function(){
+          var changes = [];
+
+          $(this).siblings(".stringTxt").prop("readonly",true);
+          $(this).hide();
+          $(this).siblings(".editbutton").prop("disabled",false).show();
+
+          var stringTxt = $(this).siblings(".stringTxt")[0];
+
+          window.modifiedSoundData[$(stringTxt).data("key")] = $(stringTxt).val();
+
+          var soundKeys = Object.keys(window.originalSoundData);
+          var out = "";
+          var locale = $("#localeSelect").val();
+
+          for (i=0;i<soundKeys.length;i++) {
+            var soundKey = soundKeys[i];
+            var orig = window.originalSoundData[soundKey];
+            var mod = window.modifiedSoundData[soundKey];
+
+            if (mod != orig) {
+              out += "  [" + soundKey + "]\n" +
+                "-     " + locale + " = " + orig + "\n" +
+                "+     " + locale + " = " + mod + "\n";
+              $(".stringTxt[data-key='"+soundKey+"']").val(mod); // update all instances
+            }
+
+          }
+
+          $("#submitpopup textarea").text("Translation change request:\n```\n"+
+            "# data/strings/sound.txt\n" + out + "```"
+          );
+          $("#submitpopup").show();
+
+        });
+
+
+        $('.copyToClipboard').click(function () {
+            $('#submitpopup textarea').select();
+            document.execCommand('copy');
+            $(this).addClass("btn-success").text("Copied!");
+        });
+
+        $(".playtts").click(function(){
+          var myText = "";
+          var strings = $(this).siblings(".form-control").find(".stringTxt");
+          for (i=0;i<strings.length;i++) {
+            var string = strings[i];
+            // remove preceding periods from TTS text
+            if (myText.endsWith(".") || myText.endsWith("。") || myText.endsWith("।")) {
+              console.log("replacing");
+              myText = myText.slice(0, -1);
+            }
+            if (i > 0) {
+              // add comma and whitespace between TTS strings
+              myText += ", " + $(string).val();
+            } else {
+              myText += $(string).val();
+            }
+          }
+
+          console.log("Speaking", myText);
+
+          const msg = new SpeechSynthesisUtterance(
+            myText
+          );
+          msg.voice = voices[$("#voiceSelect").val()];
+          synth.speak(msg);
+        });
+        if (window.hideTts) {
+          $(".playtts").hide();
+        }
       }
 
       function showData(){
@@ -52,6 +406,8 @@
         var data = parseSoundTxt(window.soundTxtRaw)[locale];
 
         window.originalSoundData = data;
+        window.modifiedSoundData = Object.assign({}, data); // clone
+        window.fmtSoundData = {};
 
         const distance = [
           "in_50_meters",
@@ -123,8 +479,11 @@
 
         const nextStreets = [
           "Main Street",
+          "Exit 13, CA 22, Los Angeles",
+          "Broadway Avenue",
+          "3rd Street",
           "Highway 99",
-          "Exit 12, Main Street, London",
+          "Exit 15, M4: The West, London"
         ];
 
         // dist_direction_onto_street
@@ -140,7 +499,8 @@
         $("#out-f").html("");
         $("#out-g").html("");
 
-        var inputPre = "<div class='input-group mb-3'><button type='button' class='playtts btn btn-outline-secondary'>🔊</button><div class='form-control'>";
+        var inputPre = "<div class='input-group mb-3'>"; // <button type='button' class='playtts btn btn-outline-secondary'>🔊</button>
+        inputPre += "<div class='form-control'>";
         var inputPost = "</div></div>";
         var tranStringTtsPre = "<span class='tranString badge text-bg-secondary'>";
 
@@ -153,21 +513,14 @@
           }
         });
 
-        /*
-
-        $.each(data, function(i, d){
-          $("#out-a").append(i+":"+d+"<br/>");
-        });
-
-
         $.each(direction, function(i, dir){
           // can't "then" past your destination
           if (dir != "destination") {
-            var nextDir = direction[(i + 1) % direction.length];
+            var nextDir = direction[(i + 2) % direction.length];
             $("#out-b").append(inputPre +
-              tranStringPre + data[dir] + tranStringPost +
-              tranStringPre + data['then'] + tranStringPost +
-              tranStringPre + data[nextDir] + tranStringPost +
+              buildTranStringInput(dir, data[dir]) +
+              buildTranStringInput("then", data["then"], "text-bg-secondary") +
+              buildTranStringInput(nextDir, data[nextDir]) +
               inputPost);
           }
         });
@@ -175,150 +528,167 @@
         $.each(distance, function(i, dist){
           var dir = direction[i % direction.length];
           $("#out-c").append(inputPre +
-            tranStringPre + data[dist] + tranStringPost +
-            tranStringPre + data[dir] + tranStringPost +
+            buildTranStringInput(dist, data[dist], "text-bg-warning") +
+            buildTranStringInput(dir, data[dir]) +
             inputPost);
         });
 
         $.each(distance, function(i, dist){
-          var dir = direction[i % direction.length];
+          var dir = direction[direction.length - ((i+6) % direction.length+1)];
           // can't "then" past your destination
           if (dir != "destination") {
             var nextDir = direction[(i + 1) % direction.length];
             $("#out-d").append(inputPre +
-              tranStringPre + data[dist] + tranStringPost +
-              tranStringPre + data[dir] + tranStringPost +
-              tranStringPre + data['then'] + tranStringPost +
-              tranStringPre + data[nextDir] + tranStringPost +
+              buildTranStringInput(dist, data[dist], "text-bg-warning") +
+              buildTranStringInput(dir, data[dir]) +
+              buildTranStringInput("then", data["then"], "text-bg-secondary") +
+              buildTranStringInput(nextDir, data[nextDir]) +
               inputPost);
           }
         });
 
         $.each(distance, function(i, dist){
           var dir = direction[i % direction.length];
-          var nextDir = direction[(i + 1) % direction.length];
-          var ttsFmt = data['dist_direction_onto_street'];
-          var streetDir = data[dir];
-          if (data[dir+"_street"]) {
-            streetDir = data[dir+"_street"]; // overwrite the direction string if present for street TTS
+
+          if (dir != "destination") {
+          // can't "arrive onto" your destination
+            // TODO: this gets duplicated in the fmtModalForm handler
+            var fmtObj = {
+              dir: dir,
+              dist: dist,
+              nextStr: ((i+1) % nextStreets.length)
+            };
+            var fmtKey = btoa(JSON.stringify(fmtObj));
+            window.fmtSoundData[fmtKey] = fmtObj;
+            var ttsFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
+
+            var streetDir;
+            // overwrite the direction string if present for street TTS
+            if (data[dir+"_street"]) {
+              streetDir = buildTranStringInput(dir+"_street", data[dir+"_street"]);
+            } else {
+              streetDir = buildTranStringInput(dir, data[dir]);
+            }
+
+            ttsFmt = ttsFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
+            ttsFmt = ttsFmt.replace("%2$s", streetDir);
+            ttsFmt = ttsFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-info", false)); // non-editable
+
+            $("#out-e").append(inputPre +
+              ttsFmt +
+              inputPost);
           }
-
-          ttsFmt = ttsFmt.replace("%1$s", tranStringPre + data[dist].replace(/[\.。।]/g, "") + tranStringPost); // no full stops
-          ttsFmt = ttsFmt.replace("%2$s", tranStringPre + streetDir.replace(/[\.。।]/g, "") + tranStringPost); // no full stops
-          ttsFmt = ttsFmt.replace("%3$s", tranStringPre + nextStreets[(i+1) % nextStreets.length] + tranStringPost);
-
-          $("#out-e").append(inputPre +
-            tranStringTtsPre + ttsFmt + tranStringPost +
-            inputPost);
         });
+
 
         $.each(distance, function(i, dist){
-          var dir = direction[i % direction.length];
-          var nextDir = direction[(i + 1) % direction.length];
-          var ttsFmt = data['dist_direction_onto_street'];
-          var streetDir = data[dir];
-          if (data[dir+"_street"]) {
-            streetDir = data[dir+"_street"]; // overwrite the direction string if present for street TTS
+          var dir = direction[direction.length - (i % direction.length+1)];
+
+          if (dir != "destination") {
+          // can't "arrive onto" your destination
+            var nextDir = direction[(i + 1) % direction.length];
+
+            // TODO: this gets duplicated in the fmtModalForm handler
+            var fmtObj = {
+              dir: dir,
+              dist: dist,
+              nextStr: ((i+1) % nextStreets.length)
+            };
+            var fmtKey = btoa(JSON.stringify(fmtObj));
+            window.fmtSoundData[fmtKey] = fmtObj;
+            var ttsFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
+
+            var streetDir;
+            // overwrite the direction string if present for street TTS
+            if (data[dir+"_street"]) {
+              streetDir = buildTranStringInput(dir+"_street", data[dir+"_street"]);
+            } else {
+              streetDir = buildTranStringInput(dir, data[dir]);
+            }
+
+            ttsFmt = ttsFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
+            ttsFmt = ttsFmt.replace("%2$s", streetDir);
+            ttsFmt = ttsFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-info", false)); // non-editable
+
+            $("#out-f").append(inputPre +
+              ttsFmt +
+              buildTranStringInput('then', data['then'], "text-bg-success") +
+              buildTranStringInput(nextDir, data[nextDir], "text-bg-primary") +
+              inputPost);
           }
-
-          ttsFmt = ttsFmt.replace("%1$s", tranStringPre + data[dist].replace(/[\.。।]/g, "") + tranStringPost); // no full stops
-          ttsFmt = ttsFmt.replace("%2$s", tranStringPre + streetDir.replace(/[\.。।]/g, "") + tranStringPost); // no full stops
-          ttsFmt = ttsFmt.replace("%3$s", tranStringPre + nextStreets[(i+1) % nextStreets.length] + tranStringPost);
-
-          $("#out-f").append(inputPre +
-            tranStringTtsPre + ttsFmt + tranStringPost +
-            tranStringPre + data['then'] + tranStringPost +
-            tranStringPre + data[nextDir] + tranStringPost +
-            inputPost);
         });
 
         $("#out-g").append(inputPre +
-          tranStringPre + data['you_have_reached_the_destination'] + tranStringPost +
+          buildTranStringInput('you_have_reached_the_destination', data['you_have_reached_the_destination']) +
           inputPost);
         $("#out-g").append(inputPre +
-          tranStringPre + data['unknown_camera'] + tranStringPost +
+          buildTranStringInput('unknown_camera', data['unknown_camera']) +
           inputPost);
-        */
 
-        $(".tranString").hover(function(){
-          let editBtn = $(this).children(".editbutton");
-          console.log(editBtn);
-          if (editBtn.prop("disabled") == false) {
-            editBtn.show(); // only show when not disabled
-          }
-        }, function(){
-          $(this).children(".editbutton").hide();
-        });
-
-        $(".editbutton")
-        .click(function(){
-          $(this).siblings(".stringTxt").prop("readonly",false);
-          $(this).prop("disabled",true).hide();
-          $(this).siblings(".savebutton").show();
-        });
-        $(".savebutton").click(function(){
+        $("#fmtModalForm").submit(function(){
+          // for dist_direction_onto_street only
           var changes = [];
 
-          $(this).siblings(".stringTxt").prop("readonly",true);
-          $(this).hide();
-          $(this).siblings(".editbutton").prop("disabled",false).show();
+          $("#fmtModal").modal('hide');
 
-          var stringTxt = $(this).siblings(".stringTxt")[0];
+          window.modifiedSoundData['dist_direction_onto_street'] = $(document.getElementById('fmtModalText')).val();
 
-          window.originalSoundData[$(stringTxt).data("key")] = $(stringTxt).val();
+          var soundKeys = Object.keys(window.originalSoundData);
+          var out = "";
+          var locale = $("#localeSelect").val();
 
-          $("#submitpopup textarea").text("Translation change request:\n```\n"+
-              "# data/strings/sound.txt\n"+
-              JSON.stringify(window.originalSoundData)+"```"
-            );
-          $("#submitpopup").show();
+          for (i=0;i<soundKeys.length;i++) {
+            var soundKey = soundKeys[i];
+            var orig = window.originalSoundData[soundKey];
+            var mod = window.modifiedSoundData[soundKey];
 
-          /*
-          $("div.output .form-control").each(function(i,o){
-            var sibling = $(o);
-            // console.log("orig",sibling.data("orig-value"));
-            // console.log("val",sibling.val());
-            if (sibling.data("orig-value") && sibling.data("orig-value") != sibling.val()) {
-              // console.log("got",sibling.val());
-              changes.push([sibling.data("orig-value"), sibling.val()]);
+            if (mod != orig) {
+              out += "  [" + soundKey + "]\n" +
+                "-     " + locale + " = " + orig + "\n" +
+                "+     " + locale + " = " + mod + "\n";
+              $(".stringTxt[data-key='"+soundKey+"']").val(mod); // update all instances
             }
+          }
+
+          // also update all dist_direction_onto_street instances (rebuild from metadata)
+          $(".stringTxt[data-key='dist_direction_onto_street']").each(function(i,o){
+            var fmtKey = $(o).data("fmtkey");
+            var fmtObj = window.fmtSoundData[fmtKey];
+
+            var dir = fmtObj.dir;
+            var dist = fmtObj.dist;
+            var nextStr = fmtObj.nextStr;
+
+            // TODO: this gets duplicated in the showData function
+            var streetFmt = buildFmtStringInput('dist_direction_onto_street', window.modifiedSoundData['dist_direction_onto_street'], "text-bg-dark", fmtKey);
+
+            var streetDir;
+            // overwrite the direction string if present for street TTS
+            if (window.modifiedSoundData[dir+"_street"]) {
+              streetDir = buildTranStringInput(dir+"_street", window.modifiedSoundData[dir+"_street"]);
+            } else {
+              streetDir = buildTranStringInput(dir, window.modifiedSoundData[dir]);
+            }
+
+            streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, window.modifiedSoundData[dist], "text-bg-warning")); // no full stops
+            streetFmt = streetFmt.replace("%2$s", streetDir); // no full stops
+            streetFmt = streetFmt.replace("%3$s", buildTranStringInput("", nextStreets[nextStr], "text-bg-info", false)); // non-editable
+
+            $(o).parent().parent().html(streetFmt);
           });
 
-          if (changes.length > 0){
-            var out = "";
-            var locale = $("#localeSelect").val();
-
-            $.each(changes, function(x,y){
-              // console.log(x,y);
-              out += "-    "+locale+" = "+y[0]+"\n"+
-                     "+    "+locale+" = "+y[1]+"\n"
-            });
-
-            // console.log("writing", out);
-          }
-          */
-
-        });
-        // $("#closesubmitpopup").click(function(){
-        //   $("#submitpopup").hide();
-        // });
-        $('.copyToClipboard').click(function () {
-            $('#submitpopup textarea').select();
-            document.execCommand('copy');
-            $(this).addClass("btn-success").text("Copied!");
-        });
-
-        $(".playtts").click(function(){
-          var text = $($(this).siblings(".form-control")[0]).val();
-          const msg = new SpeechSynthesisUtterance(
-            text
+          $("#submitpopup textarea").text("Translation change request:\n```\n"+
+            "# data/strings/sound.txt\n" + out + "```"
           );
-          msg.voice = voices[$("#voiceSelect").val()];
-          synth.speak(msg);
+          $("#submitpopup").show();
+
+          loadEventHandlers(); // we've just redone a bunch of html, reload handlers
+
+          return false; // prevent navigation
         });
-        if (window.hideTts) {
-          $(".playtts").hide();
-        }
+
+
+        loadEventHandlers();
       }
 
       function loadLocale(){
@@ -337,168 +707,9 @@
         }
       }
     </script>
-    <style type="text/css">
-      div.output .input-group { width: 55em; }
-      div.output {
-        margin-bottom: 1em;
-        padding-bottom: 1em;
-        border-bottom: 1px dashed;
-      }
-      .btn.btn-xs {
-        --bs-btn-padding-y: .25rem;
-        --bs-btn-padding-x: .5rem;
-        --bs-btn-font-size: .5rem;
-      }
-    </style>
-  </head>
-  <body style="padding: 1em;">
-    <div style="float: right; width: 25%">
-      <p><b>Review the sample strings and suggest edits as desired. You do not need to edit every single example, only enough to communicate the needed changes.</b></p>
-      Locale file:
-      <select id="localeSelect" class="form-control">
-        <option value="ar">ﺎﻠﻋﺮﺒﻳﺓ</option>
-        <option value="be">Беларусь</option>
-        <option value="ca">Català</option>
-        <option value="cs">Čeština</option>
-        <option value="da">Dansk</option>
-        <option value="de">Deutsch</option>
-        <option value="el">Ελληνικά</option>
-        <option value="en">English</option>
-        <option value="es">Español</option>
-        <option value="es-MX">Español (MX)</option>
-        <option value="eu">Euskara</option>
-        <option value="fa">ﻑﺍﺮﺴﯾ</option>
-        <option value="fi">Suomi</option>
-        <option value="fr">Français</option>
-        <option value="hi">हिंदी</option>
-        <option value="hr">Hrvatski</option>
-        <option value="hu">Magyar</option>
-        <option value="id">Indonesia</option>
-        <option value="it">Italiano</option>
-        <option value="ja">日本語</option>
-        <option value="ko">한국어</option>
-        <option value="mr">मराठी</option>
-        <option value="nb">Norsk</option>
-        <option value="nl">Nederlands</option>
-        <option value="pl">Polski</option>
-        <option value="pt">Português</option>
-        <option value="pt-BR">Português (BR)</option>
-        <option value="ro">Română</option>
-        <option value="ru">Русский</option>
-        <option value="sk">Slovenčina</option>
-        <option value="sv">Svenska</option>
-        <option value="sw">Kiswahili</option>
-        <option value="th">ภาษาไทย</option>
-        <option value="tr">Türkçe</option>
-        <option value="uk">Українська</option>
-        <option value="vi">Tiếng Việt</option>
-        <option value="zh-Hans">中文简体</option>
-        <option value="zh-Hant">中文繁體</option>
-      </select><br/>
-      TTS Voice: <select id="voiceSelect" class="form-control"></select><br/><br/>
 
-      <!--
-      <a id="sourceUrl" href="#" target="_blank">json</a><br/>
-      <a href="https://github.com/organicmaps/organicmaps/blob/ada410b5825e2dfd7c1ed95d539292dcef7d09dc/data/strings/sound.txt" target="_blank">sound.txt</a><br/>
-      <em>Please propose any fixes by editing sound.txt or by adding a comment to the <a href="https://github.com/organicmaps/organicmaps/pull/3130">pull request</a></em>
-      -->
 
-      <!-- position: absolute; z-index: 999; padding: 1em; box-shadow: 2px 2px 6px #999; top: 20%; left: 20%; width: 60%; background: white; border: 1px solid black;" -->
-      <div id="submitpopup" style="display: none;">
-        <h3>Copy this text: <button address="any text" class="btn btn-sm btn-primary copyToClipboard"><span>Copy</span></h3>
-        <textarea class="form-control" style="height: 20em;"></textarea>
-        <h5>Then, paste it into a new comment on <a href="https://github.com/organicmaps/organicmaps/pull/3130" target="_blank">this Github pull request</a></h5>
-        <!--
-        <p style="text-align: center; margin-top: 2em;">
-          <button id="closesubmitpopup" class="btn btn-danger">Done</button>
-        </p>
-        -->
-      </div>
-    </div>
 
-    <div style="width: 74%; height: 55em; overflow: scroll; border: 1px solid #ccc; padding: 1em;">
-
-      <div class="output" id="out-e"></div>
-      <div class="output" id="out-f"></div>
-      <div class="output" id="out-g"></div>
-      <div class="output" id="out-a"></div>
-      <div class="output" id="out-b"></div>
-      <div class="output" id="out-c"></div>
-      <div class="output" id="out-d"></div>
-    </div>
-
-    <script type="text/javascript">
-      const synth = window.speechSynthesis;
-      var voices;
-
-      function loadTts(){
-        voices = synth.getVoices();
-        $.each(voices, function(i, voice){
-          $("#voiceSelect").append('<option value="'+i+'" lang="'+voice.lang+'">'+voice.name+'</option>');
-        });
-        if (voices.length == 0) {
-          $("#voiceSelect").attr("disabled", "disabled").after('<em>Try another browser to use TTS, or install TTS support for this browser.</em>');
-          window.hideTts = true;
-        }
-
-        let params = new URLSearchParams(document.location.search);
-        let lang = params.get("lang");
-        let tts = params.get("tts");
-
-        const userLocale =
-          navigator.languages && navigator.languages.length
-            ? navigator.languages[0]
-            : navigator.language;
-
-        if (lang) {
-          $("#localeSelect").val(lang);
-        } else {
-          $("#localeSelect option").each(function(i, o){
-            if (userLocale.match($(o).attr('value'))) {
-              $("#localeSelect").val($(o).attr('value'));
-            }
-          });
-        }
-        if (tts) {
-          $("#voiceSelect").val(tts);
-        } else {
-          if (lang) {
-            $("#voiceSelect option").each(function(i, o){
-              // console.log(lang,$(o).attr('lang').substr(0,2));
-              if (lang.match($(o).attr('lang').substr(0,2))) {
-                // console.log("got it");
-                $("#voiceSelect").val($(o).attr('value'));
-                return false;
-              }
-            });
-          } else {
-            $("#voiceSelect option").each(function(i, o){
-              // console.log(userLocale,$(o).attr('lang'));
-              if (userLocale.match($(o).attr('lang'))) {
-                $("#voiceSelect").val($(o).attr('value'));
-              }
-            });
-          }
-        }
-
-        $("#localeSelect").change(function(){
-          showData();
-          // params.set('lang', $("#localeSelect").val());
-          // document.location.search = params.toString();
-        });
-
-        $("#voiceSelect").change(function(){
-          loadTts();
-          // params.set('tts', $("#voiceSelect").val());
-          // document.location.search = params.toString();
-        });
-
-        loadLocale();
-      }
-
-      $(document).ready(function(){ loadTts(); });
-
-    </script>
   </body>
 </html>
 
