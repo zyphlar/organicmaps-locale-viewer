@@ -43,7 +43,7 @@
   <body style="padding: 1em;">
     <div style="position: fixed; top: 0; right: 0; width: 30%; z-index: 999; background: white; border: 1px solid gray; padding: 1em;">
       <h5>Organic Maps Locale File Viewer</h5>
-      <p>Don't worry about adding or removing periods like <span class="badge bg-secondary">.</span> <span class="badge bg-secondary">。</span>(Japanese) or <span class="badge bg-secondary">।</span>(Hindi) at the end of strings. They will not affect the TTS speech either way.</p>
+      <p>Don't worry about adding or removing periods like <span class="badge bg-secondary">.</span> <span class="badge bg-secondary">。</span>(Japanese) or <span class="badge bg-secondary">।</span>(Hindi) at the end of strings. They will not affect the TTS speech either way.<br/>You may hover over phrases to see their English version in a popup. Right-to-left languages may not be displayed correctly.</p>
       <h6>Locale language:</h6>
       <select id="localeSelect" class="form-control">
         <option value="ar">ﺎﻠﻋﺮﺒﻳﺓ</option>
@@ -255,9 +255,17 @@
         } else if (value.length < 10) {
           classes += " narrow";
         }
-        
+
+        var english = "";
+        var englishVersion = window.originalEnglishData[key];
+        if (englishVersion) {
+          english = "en: "+englishVersion;
+        }
+
         var out = "<span class='tranString badge "+color+"'><input type='text' class='"+classes+"' readonly data-key='"+
           key +
+          "' title='" +
+          english +
           "' value='" +
           value +
           "'>";
@@ -273,7 +281,10 @@
 
       function buildFmtStringInput(key, value, color="text-bg-primary", fmtKey, editable=true) {
         var classes = "stringTxt";
-        console.log(fmtKey);
+        
+        // replace RTL chars with their HTML equivalent
+        value = value.replace("\\u202C", "&#x202C");
+
         var out = "<span class='tranString badge "+color+"'><span type='text' class='"+classes+"' readonly data-key='"+
           key +
           "' data-fmtkey='" +
@@ -377,7 +388,6 @@
             var string = strings[i];
             // remove preceding periods from TTS text
             if (myText.endsWith(".") || myText.endsWith("。") || myText.endsWith("।")) {
-              console.log("replacing");
               myText = myText.slice(0, -1);
             }
             if (i > 0) {
@@ -404,6 +414,7 @@
       function showData(){
         var locale = $("#localeSelect").val();
         var data = parseSoundTxt(window.soundTxtRaw)[locale];
+        window.originalEnglishData = parseSoundTxt(window.soundTxtRaw)['en'];
 
         window.originalSoundData = data;
         window.modifiedSoundData = Object.assign({}, data); // clone
