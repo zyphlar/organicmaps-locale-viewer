@@ -42,9 +42,9 @@
   </head>
   <body style="padding: 1em;">
     <div style="position: fixed; top: 0; right: 0; width: 30%; z-index: 999; background: white; border: 1px solid gray; padding: 1em;">
-      <h5>Organic Maps Locale Viewer/Editor</h5>
+      <h3 style="font-size: 1.5em;">Organic Maps Locale Viewer / Editor</h3>
       <p>Don't worry about adding or removing periods like <span class="badge bg-secondary">.</span> <span class="badge bg-secondary">。</span>(Japanese) or <span class="badge bg-secondary">।</span>(Hindi) at the end of strings. They will not affect the TTS speech either way.<br/>You may hover over phrases to see their English version in a popup. Right-to-left languages may not be displayed correctly. Click the edit button next to a string and then click the save button to make changes.</p>
-      <h6>Locale language:</h6>
+      <b>Locale language:</b>
       <select id="localeSelect" class="form-control">
         <option value="ar">ﺎﻠﻋﺮﺒﻳﺓ</option>
         <option value="be">Беларусь</option>
@@ -95,9 +95,9 @@
 
       <!-- position: absolute; z-index: 999; padding: 1em; box-shadow: 2px 2px 6px #999; top: 20%; left: 20%; width: 60%; background: white; border: 1px solid black;" -->
       <div id="submitpopup" style="display: none;">
-        <h3>Copy this text: <button address="any text" class="btn btn-sm btn-primary copyToClipboard"><span>Copy</span></h3>
+        <b>Copy this text: </b><button address="any text" class="btn btn-sm btn-primary copyToClipboard"><span>Copy</span></button>
         <textarea class="form-control" style="height: 20em; font-family: monospace;"></textarea>
-        <h5>Then, paste it into a new comment on <a href="https://github.com/organicmaps/organicmaps/pull/3130" target="_blank">this Github pull request</a></h5>
+        <p><b>Then,</b> paste it into a new comment on <a href="https://github.com/organicmaps/organicmaps/pull/3130" target="_blank">this Github pull request</a></p>
         <!--
         <p style="text-align: center; margin-top: 2em;">
           <button id="closesubmitpopup" class="btn btn-danger">Done</button>
@@ -203,10 +203,10 @@
                   <ul>
                     <li><span class="badge text-bg-warning">%1$s</span> will be replaced by the distance, like "in 500 meters."</li>
                     <li><span class="badge text-bg-primary">%2$s</span> will be replaced by the direction, like "make a right turn."</li>
-                    <li><span class="badge text-bg-info">%3$s</span> will be replaced by the name or number of the street or exit, like "Main Street" or "Exit 123."</li>
+                    <li><span class="badge text-bg-secondary">%3$s</span> will be replaced by the name or number of the street or exit, like "Main Street" or "Exit 123."</li>
                   </ul>
-                  For example "<span class="badge text-bg-warning">%1$s</span> <span class="badge text-bg-primary">%2$s</span> onto <span class="badge text-bg-info">%3$s</span>"<br/> becomes "<span class="badge text-bg-warning">In 500 meters</span> <span class="badge text-bg-primary">make a right turn</span> onto <span class="badge text-bg-info">Main Street</span>"<br/><br/>
-                  whereas "<span class="badge text-bg-info">%3$s</span> is the place to <span class="badge text-bg-primary">%2$s</span> when you reach it <span class="badge text-bg-warning">%1$s</span>"<br/> becomes "<span class="badge text-bg-info">Main Street</span> is the place to <span class="badge text-bg-primary">make a right turn</span> when you reach it <span class="badge text-bg-warning">in 500 meters</span>."
+                  For example "<span class="badge text-bg-warning">%1$s</span> <span class="badge text-bg-primary">%2$s</span> onto <span class="badge text-bg-secondary">%3$s</span>"<br/> becomes "<span class="badge text-bg-warning">In 500 meters</span> <span class="badge text-bg-primary">make a right turn</span> onto <span class="badge text-bg-secondary">Main Street</span>"<br/><br/>
+                  whereas "<span class="badge text-bg-secondary">%3$s</span> is the place to <span class="badge text-bg-primary">%2$s</span> when you reach it <span class="badge text-bg-warning">%1$s</span>"<br/> becomes "<span class="badge text-bg-secondary">Main Street</span> is the place to <span class="badge text-bg-primary">make a right turn</span> when you reach it <span class="badge text-bg-warning">in 500 meters</span>."
                 </div>
             </div>
             <div class="modal-footer">
@@ -530,7 +530,7 @@
             var nextDir = direction[(i + 2) % direction.length];
             $("#out-b").append(inputPre +
               buildTranStringInput(dir, data[dir]) +
-              buildTranStringInput("then", data["then"], "text-bg-secondary") +
+              buildTranStringInput("then", data["then"], "text-bg-success") +
               buildTranStringInput(nextDir, data[nextDir]) +
               inputPost);
           }
@@ -552,7 +552,7 @@
             $("#out-d").append(inputPre +
               buildTranStringInput(dist, data[dist], "text-bg-warning") +
               buildTranStringInput(dir, data[dir]) +
-              buildTranStringInput("then", data["then"], "text-bg-secondary") +
+              buildTranStringInput("then", data["then"], "text-bg-success") +
               buildTranStringInput(nextDir, data[nextDir]) +
               inputPost);
           }
@@ -583,7 +583,7 @@
 
             ttsFmt = ttsFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
             ttsFmt = ttsFmt.replace("%2$s", streetDir);
-            ttsFmt = ttsFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-info", false)); // non-editable
+            ttsFmt = ttsFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
 
             $("#out-e").append(inputPre +
               ttsFmt +
@@ -619,7 +619,7 @@
 
             ttsFmt = ttsFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
             ttsFmt = ttsFmt.replace("%2$s", streetDir);
-            ttsFmt = ttsFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-info", false)); // non-editable
+            ttsFmt = ttsFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
 
             $("#out-f").append(inputPre +
               ttsFmt +
@@ -683,7 +683,7 @@
 
             streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, window.modifiedSoundData[dist], "text-bg-warning")); // no full stops
             streetFmt = streetFmt.replace("%2$s", streetDir); // no full stops
-            streetFmt = streetFmt.replace("%3$s", buildTranStringInput("", nextStreets[nextStr], "text-bg-info", false)); // non-editable
+            streetFmt = streetFmt.replace("%3$s", buildTranStringInput("", nextStreets[nextStr], "text-bg-secondary", false)); // non-editable
 
             $(o).parent().parent().html(streetFmt);
           });
