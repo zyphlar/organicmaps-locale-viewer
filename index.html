@@ -11,8 +11,9 @@
         --bs-badge-padding-y: 0.15em;
       }
 
-      div.output .input-group { width: 55em; }
+      /*div.output .input-group { width: 55em; }*/
       div.output {
+        width: 70%;
         margin-bottom: 1em;
         padding-bottom: 1em;
         border-bottom: 1px dashed;
@@ -25,7 +26,7 @@
 
       .tranString.badge {
         height: 2.5em;
-        margin: 0 0.1em;
+        margin: 0 0.1em 0.2em;
       }
       .tranString input[type='text'] {
         border-collapse: collapse;
@@ -35,6 +36,10 @@
         background: transparent;
         color: white;
       }
+      .buttonwrapper {
+        display: inline-block;
+        width: 2em;
+      }
       .wide { width: 18em; }
       .narrow { width: 7em; }
       .text-bg-warning { background-color: RGBA(183,138,2,var(--bs-bg-opacity,1)) !important }
@@ -43,7 +48,7 @@
   <body style="padding: 1em;">
     <div style="position: fixed; top: 0; right: 0; width: 30%; z-index: 999; background: white; border: 1px solid gray; padding: 1em;">
       <h3 style="font-size: 1.5em;">Organic Maps Locale Viewer / Editor</h3>
-      <p>Don't worry about adding or removing periods like <span class="badge bg-secondary">.</span> <span class="badge bg-secondary">。</span>(Japanese) or <span class="badge bg-secondary">।</span>(Hindi) at the end of strings. They will not affect the TTS speech either way.<br/>You may hover over phrases to see their English version in a popup. Right-to-left languages may not be displayed correctly. Click the edit button next to a string and then click the save button to make changes.</p>
+      <p>Don't worry about adding or removing periods like <span class="badge bg-secondary">.</span> <span class="badge bg-secondary">。</span>(Japanese) or <span class="badge bg-secondary">।</span>(Hindi) at the end of strings. They are automatically removed as appropriate. <br/>You may hover over phrases to see their English version in a popup. Right-to-left languages may not be displayed correctly. Click the edit button next to a string and then click the save button to make changes. <br/><b>Your changes are not saved anywhere,</b> so copy the change request that appears below when you're ready.</p>
       <b>Locale language:</b>
       <select id="localeSelect" class="form-control">
         <option value="ar">ﺎﻠﻋﺮﺒﻳﺓ</option>
@@ -96,7 +101,7 @@
       <!-- position: absolute; z-index: 999; padding: 1em; box-shadow: 2px 2px 6px #999; top: 20%; left: 20%; width: 60%; background: white; border: 1px solid black;" -->
       <div id="submitpopup" style="display: none;">
         <b>Copy this text: </b><button address="any text" class="btn btn-sm btn-primary copyToClipboard"><span>Copy</span></button>
-        <textarea class="form-control" style="height: 20em; font-family: monospace;"></textarea>
+        <textarea class="form-control" style="height: 20em; font-family: monospace; font-size: 0.7em"></textarea>
         <p><b>Then,</b> paste it into a new comment on <a href="https://github.com/organicmaps/organicmaps/pull/3130" target="_blank">this Github pull request</a></p>
         <!--
         <p style="text-align: center; margin-top: 2em;">
@@ -250,11 +255,8 @@
 
       function buildTranStringInput(key, value, color="text-bg-primary", editable=true) {
         var classes = "stringTxt";
-        if (value.length > 22) {
-          classes += " wide";
-        } else if (value.length < 10) {
-          classes += " narrow";
-        }
+
+        var size = value.length+2;
 
         var english = "";
         var englishVersion = window.originalEnglishData[key];
@@ -262,7 +264,7 @@
           english = "en: "+englishVersion;
         }
 
-        var out = "<span class='tranString badge "+color+"'><input type='text' class='"+classes+"' readonly data-key='"+
+        var out = "<span class='tranString badge "+color+"'><input type='text' class='"+classes+"' size='"+size+"' readonly data-key='"+
           key +
           "' title='" +
           english +
@@ -271,7 +273,7 @@
           "'>";
 
           if (editable) {
-            out += "&nbsp;&nbsp;<button class='editbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button><button class='savebutton btn btn-xs btn-light text-success' style='display: none;' type='button'><i class='bi bi-check-lg'></i></button>";
+            out += "<span class='buttonwrapper'><button class='editbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button><button class='savebutton btn btn-xs btn-light text-success' style='display: none;' type='button'><i class='bi bi-check-lg'></i></button></span>";
           }
 
           out += "</span>";
@@ -294,7 +296,7 @@
           "</span>";
 
           if (editable) {
-            out += "&nbsp;&nbsp;<button class='fmteditbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button>";
+            out += "<span class='buttonwrapper'><button class='fmteditbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button></span>";
           }
 
           out += "</span>";
@@ -305,29 +307,36 @@
       function loadEventHandlers(){
 
         $(".tranString").hover(function(){
-          let editBtn = $(this).children(".editbutton");
+          let editBtn = $(this).children(".buttonwrapper").find(".editbutton");
           if (editBtn.prop("disabled") == false) {
             editBtn.show(); // only show when not disabled
           }
-          let ttsEditBtn = $(this).children(".fmteditbutton");
+          let ttsEditBtn = $(this).children(".buttonwrapper").find(".fmteditbutton");
           if (ttsEditBtn.prop("disabled") == false) {
             ttsEditBtn.show(); // only show when not disabled
           }
         }, function(){
-          $(this).children(".editbutton").hide();
-          $(this).children(".fmteditbutton").hide();
+          $(this).children(".buttonwrapper").find(".editbutton").hide();
+          $(this).children(".buttonwrapper").find(".fmteditbutton").hide();
         });
 
         $(".stringTxt").on('keyup', function (e) {
+          // handle enter = save
           if (e.key === 'Enter' || e.keyCode === 13) {
-            $(this).siblings(".savebutton").click();
+            $(this).siblings().find(".savebutton").click();
+            $(this).blur();
           }
+
+          // adjust input size by text content
+          var size = $(this).val().length;
+          $(this).attr('size', size+2);
+
         }).dblclick(function(){
-          $(this).siblings(".editbutton").click();
+          $(this).siblings().find(".editbutton").click();
         }); 
 
         $(".editbutton").click(function(){
-          $(this).siblings(".stringTxt").prop("readonly",false);
+          $(this).parent().siblings(".stringTxt").prop("readonly",false).focus();
           $(this).prop("disabled",true).hide();
           $(this).siblings(".savebutton").show();
         });
@@ -341,11 +350,11 @@
         $(".savebutton").click(function(){
           var changes = [];
 
-          $(this).siblings(".stringTxt").prop("readonly",true);
+          $(this).parent().siblings(".stringTxt").prop("readonly",true);
           $(this).hide();
           $(this).siblings(".editbutton").prop("disabled",false).show();
 
-          var stringTxt = $(this).siblings(".stringTxt")[0];
+          var stringTxt = $(this).parent().siblings(".stringTxt")[0];
 
           window.modifiedSoundData[$(stringTxt).data("key")] = $(stringTxt).val();
 
