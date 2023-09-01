@@ -43,6 +43,13 @@
       .wide { width: 18em; }
       .narrow { width: 7em; }
       .text-bg-warning { background-color: RGBA(183,138,2,var(--bs-bg-opacity,1)) !important }
+      .distance {
+        font-weight: bold;
+        padding: 0.2em;
+        color: white;
+        background-color: rgba(255,255,255,0.2);
+        margin-right: 1em;
+      }
     </style>
   </head>
   <body style="padding: 1em;">
@@ -260,7 +267,7 @@
         if (!value)
           return "";
 
-        var size = value.length+2;
+        var size = value.length+6;
 
         var english = "key: "+key;
         var englishVersion = window.originalEnglishData[key];
@@ -268,7 +275,118 @@
           english += "\nen: "+englishVersion;
         }
 
-        var out = "<span class='tranString badge "+color+"'><input type='text' class='"+classes+"' size='"+size+"' readonly data-key='"+
+        var out = "<span class='tranString badge "+color+"'>";
+
+        // display "then" icon
+        if (key == "then"){
+          out += "<span class='distance'>...</span>";
+        }
+
+        // display distance icon
+        if (key.substring(0,3) == "in_"){
+          var dist = key.replace(/in_|_meters|_kilometers|_kilometer|_feet|_miles|_mile/g, '').replace(/_/g, '.');
+          var unit = "";
+          if (key.includes("kilo")){
+            unit = "km";
+          } else if (key.includes("meter")){
+            unit = "m";
+          } else if (key.includes("feet")){
+            unit = "ft";
+          } else if (key.includes("mile")){
+            unit = "mi";
+          }
+          out += "<span class='distance'>"+dist+unit+"</span>";
+        }
+
+        const imagesArr = {
+          "take_the_1_exit": "ic_turn_round_exit_1",
+          "take_the_2_exit": "ic_turn_round_exit_2",
+          "take_the_3_exit": "ic_turn_round_exit_3",
+          "take_the_4_exit": "ic_turn_round_exit_4",
+          "take_the_5_exit": "ic_turn_round_exit_5",
+          "take_the_6_exit": "ic_turn_round_exit_6",
+          "take_the_7_exit": "ic_turn_round_exit_7",
+          "take_the_8_exit": "ic_turn_round_exit_8",
+          "take_the_9_exit": "ic_turn_round_exit_9",
+          "take_the_10_exit": "ic_turn_round_exit_10",
+          "take_the_11_exit": "ic_turn_round_exit_11",
+          "make_a_slight_right_turn": "ic_turn_right_slight",
+          "make_a_right_turn": "ic_turn_right",
+          "make_a_sharp_right_turn": "ic_turn_right_sharp",
+          "enter_the_roundabout": "ic_turn_round_enter",
+          "leave_the_roundabout": "ic_turn_round_exit",
+          "make_a_slight_left_turn": "ic_turn_left_slight",
+          "make_a_left_turn": "ic_turn_left",
+          "make_a_sharp_left_turn": "ic_turn_left_sharp",
+          "make_a_u_turn": "ic_turn_uleft",
+          "go_straight": "ic_turn_straight",
+          "exit": "ic_exit_highway_to_right",
+          "destination": "ic_turn_finish",
+          "you_have_reached_the_destination": "ic_turn_finish",
+          "unknown_camera": "camera"
+        };
+
+        // _street_verb and _street use the same icons
+        var imageKey = key.replace(/_street_verb|_street/g, '');
+
+        if (img = imagesArr[imageKey]){
+
+          // poorly detect left/right driving based on user's browser timezone for iconography
+          // (the browser being used tells us about the user, versus the language being selected)
+          var browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          if (
+            browserTimezone.includes("Nassau") || // Bahamas
+            browserTimezone.includes("Jamaica") ||
+            browserTimezone.includes("Guyana") ||
+            browserTimezone.includes("Paramaribo") || // Suriname
+            browserTimezone.includes("Stanley") || // Falkland
+            browserTimezone.includes("London") || // UK
+            browserTimezone.includes("GB") || // UK
+            browserTimezone.includes("Dublin") || // Ireland
+            browserTimezone.includes("Eire") ||
+            browserTimezone.includes("Windhoek") || // Namibia
+            browserTimezone.includes("Johannesburg") || // South Africa
+            browserTimezone.includes("Maputo") || // Mozambique, Botswana, Malawi, Zambia, Zimbabwe (NOT: Burundi, DRC, Rwanda)
+            browserTimezone.includes("Blantyre") || // Malawi
+            browserTimezone.includes("Nairobi") || // Kenya, Uganda, Tanzania (NOT: Somalia, Madagascar, Comoros, Ethiopia, Eritrea, Djibouti)
+            browserTimezone.includes("Mbabane") || // Swaziland
+            browserTimezone.includes("Maseru") || // Lesotho
+            browserTimezone.includes("Nicosia") || // Cyprus
+            browserTimezone.includes("Famagusta") || // Cyprus
+            browserTimezone.includes("Karachi") || // Pakistan
+            browserTimezone.includes("Kolkata") || // India
+            browserTimezone.includes("Katmandu") || // Nepal
+            browserTimezone.includes("Thimphu") || // Bhutan
+            browserTimezone.includes("Dhaka") || // Bangladesh
+            browserTimezone.includes("Colombo") || // Sri Lanka
+            browserTimezone.includes("Bangkok") || // Thailand
+            browserTimezone.includes("Tokyo") || // Japan
+            browserTimezone.includes("Japan") ||
+            browserTimezone.includes("Jakarta") || // Indonesia
+            browserTimezone.includes("Jayapura") ||
+            browserTimezone.includes("Makassar") ||
+            browserTimezone.includes("Pontianak") ||
+            browserTimezone.includes("Singapore") || // and Malaysia
+            browserTimezone.includes("Bougainville") || // Papua New Guinea
+            browserTimezone.includes("Port_Moresby") ||
+            browserTimezone.includes("Australia") ||
+            browserTimezone.includes("Auckland") || // New Zealand
+            browserTimezone.includes("Chatham") ||
+            browserTimezone.includes("Fiji") ||
+            browserTimezone.includes("Pago_Pago")
+          ){
+            imagesArr["make_a_u_turn"] = "ic_turn_uright";
+            imagesArr["exit"] = "ic_exit_highway_to_left";
+          }
+
+          var imageAlt = img.replace(/ic_|turn_/g, '')
+            .replace(/round/g, 'roundabout').replace(/uleft|uright/g, 'u-turn')
+            .replace(/highway_to_left|highway_to_right/g, 'highway').replace(/_/g, ' ');
+
+          out += "<img alt='"+imageAlt+"' title='"+imageAlt+"' src='img/"+img+".webp' style='height: 1.5em; margin-right: 1em' />";
+        }
+
+        out += "<input type='text' class='"+classes+"' size='"+size+"' readonly data-key='"+
           key +
           "' title='" +
           english +
@@ -276,11 +394,11 @@
           value +
           "'>";
 
-          if (editable) {
-            out += "<span class='buttonwrapper'><button class='editbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button><button class='savebutton btn btn-xs btn-light text-success' style='display: none;' type='button'><i class='bi bi-check-lg'></i></button></span>";
-          }
+        if (editable) {
+          out += "<span class='buttonwrapper'><button class='editbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button><button class='savebutton btn btn-xs btn-light text-success' style='display: none;' type='button'><i class='bi bi-check-lg'></i></button></span>";
+        }
 
-          out += "</span>";
+        out += "</span>";
 
         return out;
       }
@@ -333,7 +451,7 @@
 
           // adjust input size by text content
           var size = $(this).val().length;
-          $(this).attr('size', size+2);
+          $(this).attr('size', size+6);
 
         }).dblclick(function(){
           $(this).siblings().find(".editbutton").click();
