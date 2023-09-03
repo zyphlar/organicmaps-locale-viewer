@@ -43,6 +43,7 @@
       .wide { width: 18em; }
       .narrow { width: 7em; }
       .text-bg-warning { background-color: RGBA(183,138,2,var(--bs-bg-opacity,1)) !important }
+      .text-bg-light { background-color: RGBA(196,196,196,var(--bs-bg-opacity,1)) !important }
       .distance {
         font-weight: bold;
         padding: 0.2em;
@@ -237,6 +238,20 @@
     <script type="text/javascript">
       function parseSoundTxt(raw) {
         var lines = raw.split("\n");
+
+        // TODO: temporary testing
+        lines.push(" [dist_direction_onto_exit]");
+        lines.push("   comment = [1: In 100m] [2: take exit %s / follow signs] [3: for the [%s] expressway] [4: towards %s]");
+        lines.push("   en = %1$s %2$s %3$s %4$s");
+        lines.push(" [take_exit]");
+        lines.push("   en = take exit %s");
+        lines.push(" [follow_signs]");
+        lines.push("   en = follow signs");
+        lines.push(" [for_the_expressway]");
+        lines.push("   en = for highway %s");
+        lines.push(" [towards]");
+        lines.push("   en = towards %s");
+
         var thisSection = "";
         var out = {};
 
@@ -261,7 +276,7 @@
         return out;
       }
 
-      function buildTranStringInput(key, value, color="text-bg-primary", editable=true) {
+      function buildTranStringInput(key, value, color="text-bg-primary", editable=true, nested="unnested") {
         var classes = "stringTxt";
 
         if (!value)
@@ -295,7 +310,10 @@
           } else if (key.includes("mile")){
             unit = "mi";
           }
-          out += "<span class='distance'>"+dist+unit+"</span>";
+          var distEl = document.createElement("span");
+          distEl.setAttribute("class", "distance");
+          distEl.innerText = dist+unit;
+          out += distEl.outerHTML;
         }
 
         const imagesArr = {
@@ -386,13 +404,24 @@
           out += "<img alt='"+imageAlt+"' title='"+imageAlt+"' src='img/"+img+".webp' style='height: 1.5em; margin-right: 1em' />";
         }
 
-        out += "<input type='text' class='"+classes+"' size='"+size+"' readonly data-key='"+
-          key +
-          "' title='" +
-          english +
-          "' value='" +
-          value +
-          "'>";
+        if (nested == "nested") {
+          var nestedEl = document.createElement("span");
+          nestedEl.setAttribute("class", classes);
+          nestedEl.setAttribute("data-key", key);
+          nestedEl.setAttribute("title", english);
+          nestedEl.innerHTML = value;
+          out += nestedEl.outerHTML;
+        } else {
+          var valueEl = document.createElement("input");
+          valueEl.setAttribute("type", "text");
+          valueEl.setAttribute("class", classes);
+          valueEl.setAttribute("size", size);
+          valueEl.setAttribute("readonly", true);
+          valueEl.setAttribute("data-key", key);
+          valueEl.setAttribute("title", english);
+          valueEl.setAttribute("value", value);
+          out += valueEl.outerHTML;
+        }
 
         if (editable) {
           out += "<span class='buttonwrapper'><button class='editbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button><button class='savebutton btn btn-xs btn-light text-success' style='display: none;' type='button'><i class='bi bi-check-lg'></i></button></span>";
@@ -542,6 +571,95 @@
         }
       }
 
+      function parseNextStreet(nextStreetStr) {
+        var out = {
+          exitNum: null,
+          nextExpwy: null,
+          nextRoad: null,
+          destination: null
+        };
+          // "[I 10 Bypass] > Downtown",
+          // "[M4] > The West; London",
+        // try multiple rounds of parsing, from most complex to least
+        var nextStreetArr = Array.from(nextStreetStr.matchAll(/\[(.+)\]: \[(.+)\] (.+) > (.+)/g));
+        if (nextStreetArr.length) {
+          out.exitNum = nextStreetArr[0][1];
+          out.nextExpwy = nextStreetArr[0][2];
+          out.nextRoad = nextStreetArr[0][3];
+          out.destination = nextStreetArr[0][4];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          nextStreetArr = Array.from(nextStreetStr.matchAll(/\[(.+)\]: \[(.+)\] > (.+)/g));
+        }
+        if (nextStreetArr.length) {
+          out.exitNum = nextStreetArr[0][1];
+          out.nextExpwy = nextStreetArr[0][2];
+          out.destination = nextStreetArr[0][3];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          nextStreetArr = Array.from(nextStreetStr.matchAll(/\[(.+)\]: (.+) > (.+)/g));
+        }
+        if (nextStreetArr.length) {
+          out.exitNum = nextStreetArr[0][1];
+          out.nextRoad = nextStreetArr[0][2];
+          out.destination = nextStreetArr[0][3];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          nextStreetArr = Array.from(nextStreetStr.matchAll(/\[(.+)\] (.+) > (.+)/g));
+        }
+        if (nextStreetArr.length) {
+          out.nextExpwy = nextStreetArr[0][1];
+          out.nextRoad = nextStreetArr[0][2];
+          out.destination = nextStreetArr[0][3];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          nextStreetArr = Array.from(nextStreetStr.matchAll(/\[(.+)\] > (.+)/g));
+        }
+        if (nextStreetArr.length) {
+          out.nextExpwy = nextStreetArr[0][1];
+          out.destination = nextStreetArr[0][2];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          nextStreetArr = Array.from(nextStreetStr.matchAll(/(.+) > (.+)/g));
+        }
+        if (nextStreetArr.length) {
+          out.nextRoad = nextStreetArr[0][1];
+          out.destination = nextStreetArr[0][2];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          nextStreetArr = Array.from(nextStreetStr.matchAll(/\[(.+)\] (.+)/g));
+        }
+        if (nextStreetArr.length) {
+          out.nextExpwy = nextStreetArr[0][1];
+          out.nextRoad = nextStreetArr[0][2];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          nextStreetArr = Array.from(nextStreetStr.matchAll(/\[(.+)\]:/g));
+        }
+        if (nextStreetArr.length) {
+          out.exitNum = nextStreetArr[0][1];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          nextStreetArr = Array.from(nextStreetStr.matchAll(/\[(.+)\]/g));
+        }
+        if (nextStreetArr.length) {
+          out.nextExpwy = nextStreetArr[0][1];
+          return out;
+        }
+        if (!nextStreetArr.length) {
+          out.nextRoad = nextStreetStr; // give up, we assume it's a plain road
+          return out;
+        }
+      }
+
       function showData(){
         var locale = $("#localeSelect").val();
         var data = parseSoundTxt(window.soundTxtRaw)[locale];
@@ -621,14 +739,19 @@
 
         const nextStreets = [
           "Main Street",
-          "Exit 13, CA 22, Los Angeles",
-          "Broadway Avenue",
-          "3rd Street",
-          "Highway 99",
-          "Exit 15, M4: The West, London"
+          "3rd Avenue",
+          "[23B]:",
+          "[US 99]",
+          "[NY 53] Empire Parkway",
+          "[I 10 Bypass] > Downtown",
+          "[M4] > The West; London",
+          "[2]: [US 22]",
+          "[13A]: [CA 22] > City Center; Los Angeles",
+          "[243]: [CA 1] Pacific Coast Highway > Monterey Bay; San Francisco",
         ];
 
         // dist_direction_onto_street
+        // dist_direction_onto_exit
         // then
         // you_have_reached_the_destination
         // unknown_camera
@@ -704,7 +827,6 @@
             };
             var fmtKey = btoa(JSON.stringify(fmtObj));
             window.fmtSoundData[fmtKey] = fmtObj;
-            var streetFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
 
             var streetDir;
             // overwrite the direction string if present for street TTS
@@ -718,10 +840,61 @@
             if (data[dir+"_street_verb"])
               streetDirVerb = data[dir+"_street_verb"];
 
-            streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
-            streetFmt = streetFmt.replace("%2$s", streetDir);
-            streetFmt = streetFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
-            streetFmt = streetFmt.replace("%4$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
+            var nextStreetStr = nextStreets[(i+1) % nextStreets.length];
+
+            var streetFmt;
+            // dir exit is a highway exit, otherwise presence of a [ means highway turn (entrance/merge)
+            if (dir == "exit" || nextStreetStr[0] == "["){
+              // long highway exit form, "[In 500 ft] take exit [12] for [Main Street] towards [London]" (no particle since it's already set)
+              // the text format from OM is: "[243]: [CA 1] Pacific Coast Highway > Monterey Bay; San Francisco"
+              // the format string is: [1: In 100m] [2: take exit %s / follow signs] [3: for the [%s] expressway / for [%s]] [4: towards %s]");
+              streetFmt = buildFmtStringInput('dist_direction_onto_exit', data['dist_direction_onto_exit'], "text-bg-light", fmtKey);
+
+              streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
+
+              var nextStreetObj = parseNextStreet(nextStreetStr);
+
+              // determine if this is an exit or an entrance/merge
+              if (dir == "exit") {
+                window.fmtSoundData["take_exit"] = { nextStr: ((i+1) % nextStreets.length) };
+                var exitStr = buildFmtStringInput("take_exit", data["take_exit"], "text-bg-primary", "take_exit"); // editable
+                exitStr = exitStr.replace("%s", buildTranStringInput("", nextStreetObj.exitNum, "text-bg-secondary", false, "nested")); // non-editable, nested
+                streetFmt = streetFmt.replace("%2$s", exitStr); // shove it in (nesting!)
+              } else { // nextStreetStr[0] == "[", i.e. an entrance/merge
+                streetFmt = streetFmt.replace("%2$s", buildTranStringInput("follow_signs", data["follow_signs"])); //editable
+              }
+              // TODO: we should never get to a place where this else is all we do,
+              // i.e. "In 100m follow signs" and then nothing, since [ should indicate an exit or an expressway
+
+              if (nextStreetObj.nextExpwy) {
+                var expwyStr = buildTranStringInput("for_the_expressway", data["for_the_expressway"]); // editable
+                expwyStr = expwyStr.replace("%s", buildTranStringInput("", nextStreetObj.nextExpwy, "text-bg-secondary", false, "nested")); // non-editable, nested
+                streetFmt = streetFmt.replace("%3$s", expwyStr); // non-editable
+              } else if (nextStreetObj.nextRoad) {
+                var roadStr = buildTranStringInput("for_road", data["for_road"]); // editable
+                roadStr = roadStr.replace("%s", buildTranStringInput("", nextStreetObj.nextRoad, "text-bg-secondary", false, "nested")); // non-editable, nested
+                streetFmt = streetFmt.replace("%3$s", roadStr); // non-editable
+              } else {
+                streetFmt = streetFmt.replace("%4$s", ""); // nothing
+              }
+
+              if (nextStreetObj.destination) {
+                var towardsStr = buildTranStringInput("towards", data["towards"]); // editable
+                towardsStr = towardsStr.replace("%s", buildTranStringInput("", nextStreetObj.destination, "text-bg-secondary", false, "nested")); // non-editable, nested
+                streetFmt = streetFmt.replace("%4$s", towardsStr); // non-editable
+              } else {
+                streetFmt = streetFmt.replace("%4$s", ""); // nothing
+              }
+
+            } else {
+              // short turn form, "[In 500 ft] [turn right] onto [Main Street]" with optional 4th particle for "turn right"
+              streetFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
+
+              streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
+              streetFmt = streetFmt.replace("%2$s", streetDir);
+              streetFmt = streetFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
+              streetFmt = streetFmt.replace("%4$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
+            }
 
             $("#out-e").append(inputPre +
               streetFmt +
