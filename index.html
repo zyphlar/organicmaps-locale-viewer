@@ -121,6 +121,7 @@
     <div class="output" id="out-e"></div>
     <div class="output" id="out-f"></div>
     <div class="output" id="out-g"></div>
+    <div class="output" id="out-h"></div>
     <div class="output" id="out-d"></div>
     <div class="output" id="out-c"></div>
     <div class="output" id="out-b"></div>
@@ -237,6 +238,12 @@
     <script type="text/javascript">
       function parseSoundTxt(raw) {
         var lines = raw.split("\n");
+        lines.push(" [onto]");
+        lines.push("  en = onto");
+        lines.push(" [take_exit_number]");
+        lines.push("  en = Take exit");
+        lines.push(" [onto_exit_number]");
+        lines.push("  en = .");
         var thisSection = "";
         var out = {};
 
@@ -321,6 +328,9 @@
           "make_a_u_turn": "ic_turn_uleft",
           "go_straight": "ic_turn_straight",
           "exit": "ic_exit_highway_to_right",
+          // "onto",
+          "take_exit_number": "ic_exit_highway_to_right",
+          // "onto_exit_number",
           "destination": "ic_turn_finish",
           "you_have_reached_the_destination": "ic_turn_finish",
           "unknown_camera": "camera"
@@ -616,16 +626,25 @@
           "make_a_u_turn",
           "go_straight",
           "exit",
+          // "onto",
+          // "take_exit_number",
+          // "onto_exit_number",
           "destination" // exception: shouldn't have a street afterwards
         ];
 
         const nextStreets = [
           "Main Street",
-          "Exit 13, CA 22, Los Angeles",
           "Broadway Avenue",
           "3rd Street",
-          "Highway 99",
-          "Exit 15, M4: The West, London"
+          "Highway 99"
+        ];
+
+        const nextExits = [
+          "35A: CA 1, Pacific Coast Highway, Los Angeles",
+          "13: CA 22, Los Angeles",
+          "243: I 10, Eisenhower Freeway",
+          "19: Downtown",
+          "15: M4, Queen's Expressway; London"
         ];
 
         // dist_direction_onto_street
@@ -704,6 +723,7 @@
             };
             var fmtKey = btoa(JSON.stringify(fmtObj));
             window.fmtSoundData[fmtKey] = fmtObj;
+            data['dist_direction_onto_street'] = "%1$s %2$s %3$s %4$s"; // TODO temp
             var streetFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
 
             var streetDir;
@@ -720,10 +740,59 @@
 
             streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
             streetFmt = streetFmt.replace("%2$s", streetDir);
-            streetFmt = streetFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
-            streetFmt = streetFmt.replace("%4$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
+            streetFmt = streetFmt.replace("%3$s", buildTranStringInput('onto', data['onto'], "text-bg-info"));
+            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
+            streetFmt = streetFmt.replace("%5$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
 
             $("#out-e").append(inputPre +
+              streetFmt +
+              inputPost);
+          }
+        });
+
+        $.each(nextExits, function(i, nextStr){
+          var dir = "take_exit_number"; //direction[i % direction.length];
+          var dist = distance[((i+1) % distance.length)];
+
+          if (dir != "destination") {
+          // can't "arrive onto" your destination
+            //
+            // TODO: this entire section gets largely duplicated in the fmtModalForm handler
+            //
+            var fmtObj = {
+              dir: dir,
+              dist: ((i+1) % distance.length),
+              nextStr: nextStr
+            };
+            var fmtKey = btoa(JSON.stringify(fmtObj));
+            window.fmtSoundData[fmtKey] = fmtObj;
+            data['dist_direction_onto_street'] = "%1$s %2$s %3$s %4$s"; // TODO temp
+            var streetFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
+
+            var streetDir;
+            // overwrite the direction string if present for street TTS
+            //if (data[dir+"_street"]) {
+             // streetDir = buildTranStringInput(dir+"_street", data[dir+"_street"]);
+            //} else {
+              streetDir = buildTranStringInput(dir, data[dir]);
+            //}
+
+            var streetDirVerb;
+            if (data[dir+"_street_verb"])
+              streetDirVerb = data[dir+"_street_verb"];
+
+            // TODO: do we need this?
+            var ontoExitStr = ""; //data['onto_exit_number'];
+            // if (ontoExitStr == ".")
+            //   ontoExitStr = "(blank)";
+
+            streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
+            streetFmt = streetFmt.replace("%2$s", streetDir);
+            streetFmt = streetFmt.replace("%3$s", buildTranStringInput('onto_exit_number', ontoExitStr, "text-bg-info"));
+            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", nextStr, "text-bg-secondary", false)); // non-editable
+            streetFmt = streetFmt.replace("%5$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
+
+            $("#out-f").append(inputPre +
               streetFmt +
               inputPost);
           }
@@ -763,10 +832,11 @@
 
             streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
             streetFmt = streetFmt.replace("%2$s", streetDir);
-            streetFmt = streetFmt.replace("%3$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
-            streetFmt = streetFmt.replace("%4$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
+            streetFmt = streetFmt.replace("%3$s", buildTranStringInput('onto', data['onto'], "text-bg-info"));
+            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
+            streetFmt = streetFmt.replace("%5$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
 
-            $("#out-f").append(inputPre +
+            $("#out-g").append(inputPre +
               streetFmt +
               buildTranStringInput('then', data['then'], "text-bg-success") +
               buildTranStringInput(nextDir, data[nextDir], "text-bg-primary") +
@@ -774,10 +844,10 @@
           }
         });
 
-        $("#out-g").append(inputPre +
+        $("#out-h").append(inputPre +
           buildTranStringInput('you_have_reached_the_destination', data['you_have_reached_the_destination']) +
           inputPost);
-        $("#out-g").append(inputPre +
+        $("#out-h").append(inputPre +
           buildTranStringInput('unknown_camera', data['unknown_camera']) +
           inputPost);
 
