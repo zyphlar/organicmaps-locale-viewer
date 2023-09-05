@@ -238,12 +238,6 @@
     <script type="text/javascript">
       function parseSoundTxt(raw) {
         var lines = raw.split("\n");
-        lines.push(" [onto]");
-        lines.push("  en = onto");
-        lines.push(" [take_exit_number]");
-        lines.push("  en = Take exit");
-        lines.push(" [onto_exit_number]");
-        lines.push("  en = .");
         var thisSection = "";
         var out = {};
 
@@ -396,13 +390,15 @@
           out += "<img alt='"+imageAlt+"' title='"+imageAlt+"' src='img/"+img+".webp' style='height: 1.5em; margin-right: 1em' />";
         }
 
-        out += "<input type='text' class='"+classes+"' size='"+size+"' readonly data-key='"+
-          key +
-          "' title='" +
-          english +
-          "' value='" +
-          value +
-          "'>";
+        var valueEl = document.createElement("input");
+        valueEl.setAttribute("type", "text");
+        valueEl.setAttribute("class", classes);
+        valueEl.setAttribute("size", size);
+        valueEl.setAttribute("readonly", true);
+        valueEl.setAttribute("data-key", key);
+        valueEl.setAttribute("title", english);
+        valueEl.setAttribute("value", value);
+        out += valueEl.outerHTML;
 
         if (editable) {
           out += "<span class='buttonwrapper'><button class='editbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button><button class='savebutton btn btn-xs btn-light text-success' style='display: none;' type='button'><i class='bi bi-check-lg'></i></button></span>";
@@ -723,7 +719,6 @@
             };
             var fmtKey = btoa(JSON.stringify(fmtObj));
             window.fmtSoundData[fmtKey] = fmtObj;
-            data['dist_direction_onto_street'] = "%1$s %2$s %3$s %4$s"; // TODO temp
             var streetFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
 
             var streetDir;
@@ -766,7 +761,6 @@
             };
             var fmtKey = btoa(JSON.stringify(fmtObj));
             window.fmtSoundData[fmtKey] = fmtObj;
-            data['dist_direction_onto_street'] = "%1$s %2$s %3$s %4$s"; // TODO temp
             var streetFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
 
             var streetDir;
@@ -902,10 +896,11 @@
             if (window.modifiedSoundData[dir+"_street_verb"])
               streetDirVerb = window.modifiedSoundData[dir+"_street_verb"];
 
-            streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, window.modifiedSoundData[dist], "text-bg-warning")); // no full stops
-            streetFmt = streetFmt.replace("%2$s", streetDir); // no full stops
-            streetFmt = streetFmt.replace("%3$s", buildTranStringInput("", nextStreets[nextStr], "text-bg-secondary", false)); // non-editable
-            streetFmt = streetFmt.replace("%4$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
+            streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, window.modifiedSoundData[dist], "text-bg-warning"));
+            streetFmt = streetFmt.replace("%2$s", streetDir);
+            streetFmt = streetFmt.replace("%3$s", buildTranStringInput('onto', window.modifiedSoundData['onto'], "text-bg-info"));
+            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", nextStreets[nextStr], "text-bg-secondary", false)); // non-editable
+            streetFmt = streetFmt.replace("%5$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
 
             $(o).parent().parent().html(streetFmt);
           });
@@ -925,7 +920,7 @@
       }
 
       function loadLocale(){
-        var commitHash = "f3ada222856b57ce75d5fc53be09d1312c59a64b";
+        var commitHash = "1bf45f09395f67c9c5ebaa0c1d4ab7a52889bc50";
         var sourceUrl = "https://raw.githubusercontent.com/organicmaps/organicmaps/"+commitHash+"/data/strings/sound.txt";
 
         $("#sourceUrl").attr("href", sourceUrl).text("sound.txt");
