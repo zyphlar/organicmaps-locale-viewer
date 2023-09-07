@@ -36,6 +36,22 @@
         background: transparent;
         color: white;
       }
+      .tranString span.stringTxt {
+        line-height: 1.49em;
+        font-weight: normal;
+      }
+      .tranString .contextPhoto {
+        height: 1.8em;
+        margin-right: 0.5em;
+        border: 1px solid RGBA(13,110,253,1);
+        cursor: help;
+      }
+      .tranString .contextPhoto.enlarged {
+        height: 150px;
+        float: left;
+        position: relative;
+        z-index: 999;
+      }
       .buttonwrapper {
         display: inline-block;
         width: 2em;
@@ -118,8 +134,8 @@
       </div>
     </div>
 
-    <div class="output" id="out-e"></div>
     <div class="output" id="out-f"></div>
+    <div class="output" id="out-e"></div>
     <div class="output" id="out-g"></div>
     <div class="output" id="out-h"></div>
     <div class="output" id="out-d"></div>
@@ -390,18 +406,40 @@
           out += "<img alt='"+imageAlt+"' title='"+imageAlt+"' src='img/"+img+".webp' style='height: 1.5em; margin-right: 1em' />";
         }
 
-        var valueEl = document.createElement("input");
-        valueEl.setAttribute("type", "text");
-        valueEl.setAttribute("class", classes);
-        valueEl.setAttribute("size", size);
-        valueEl.setAttribute("readonly", true);
-        valueEl.setAttribute("data-key", key);
-        valueEl.setAttribute("title", english);
-        valueEl.setAttribute("value", value);
-        out += valueEl.outerHTML;
+        if (value.includes("I 278")) {
+          out += "<img class='contextPhoto' src='img/exit-i278-brooklynqueensexpressway,48street-brooklyn.png' />";
+        } else if (value.includes("H1 East")) {
+          out += "<img class='contextPhoto' src='img/exit-h1-east-airport.png' />";
+        } else if (value.includes("3: D19")) {
+          out += "<img class='contextPhoto' src='img/exit-3-d19-maisons-alfort-alfortville-stmaurice.png' />";
+        } else if (value.includes("5: I 280")) {
+          out += "<img class='contextPhoto' src='img/exit-5-i280-i680.png' />";
+        } else if (value.includes("19: NY 25")) {
+          out += "<img class='contextPhoto' src='img/exit-19-ny25-woodhavenboulevard-queensboulevard.png' />";
+        } else if (value.includes("13B: Halawa")) {
+          out += "<img class='contextPhoto' src='img/exit-13B-halawaheights-stadium.png' />";
+        } else if (value.includes("172: Priest")) {
+          out += "<img class='contextPhoto' src='img/exit-172-priest-drive.png' />";
+        }
 
         if (editable) {
+          var valueEl = document.createElement("input");
+          valueEl.setAttribute("type", "text");
+          valueEl.setAttribute("class", classes);
+          valueEl.setAttribute("size", size);
+          valueEl.setAttribute("readonly", true);
+          valueEl.setAttribute("data-key", key);
+          valueEl.setAttribute("title", english);
+          valueEl.setAttribute("value", value);
+          out += valueEl.outerHTML;
           out += "<span class='buttonwrapper'><button class='editbutton btn btn-xs btn-light text-warning' type='button' style='display:none;'><i class='bi bi-pencil-fill'></i></button><button class='savebutton btn btn-xs btn-light text-success' style='display: none;' type='button'><i class='bi bi-check-lg'></i></button></span>";
+        } else {
+          var valueEl = document.createElement("span");
+          valueEl.setAttribute("class", classes);
+          valueEl.setAttribute("data-key", key);
+          valueEl.setAttribute("title", english);
+          valueEl.innerText = value;
+          out += valueEl.outerHTML;
         }
 
         out += "</span>";
@@ -433,6 +471,12 @@
       }
 
       function loadEventHandlers(){
+
+        $(".contextPhoto").hover(function(){
+          $(this).addClass("enlarged");
+        }, function(){
+          $(this).removeClass("enlarged");
+        });
 
         $(".tranString").hover(function(){
           let editBtn = $(this).children(".buttonwrapper").find(".editbutton");
@@ -632,15 +676,17 @@
           "Main Street",
           "Broadway Avenue",
           "3rd Street",
-          "Highway 99"
+          "Highway 99",
+          "H1 East, Airport",
+          "I 278 West, Brooklyn-Queens Expressway, 48th Street, Brooklyn"
         ];
 
         const nextExits = [
-          "35A: CA 1, Pacific Coast Highway, Los Angeles",
-          "13: CA 22, Los Angeles",
-          "243: I 10, Eisenhower Freeway",
-          "19: Downtown",
-          "15: M4, Queen's Expressway; London"
+          "3: D19, D6, Maisons Alfort, Alfortville, Saint Maurice",
+          "19: NY 25, Woodhaven Boulevard, Queens Boulevard",
+          "13B: Halawa Heights, Stadium",
+          "5: I 280, I 680",
+          "172: Priest Drive"
         ];
 
         // dist_direction_onto_street
@@ -715,7 +761,7 @@
             var fmtObj = {
               dir: dir,
               dist: dist,
-              nextStr: ((i+1) % nextStreets.length)
+              nextStr: nextStreets[(i+1) % nextStreets.length]
             };
             var fmtKey = btoa(JSON.stringify(fmtObj));
             window.fmtSoundData[fmtKey] = fmtObj;
@@ -736,7 +782,7 @@
             streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
             streetFmt = streetFmt.replace("%2$s", streetDir);
             streetFmt = streetFmt.replace("%3$s", buildTranStringInput('onto', data['onto'], "text-bg-info"));
-            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
+            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", fmtObj.nextStr, "text-bg-secondary", false)); // non-editable
             streetFmt = streetFmt.replace("%5$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
 
             $("#out-e").append(inputPre +
@@ -756,7 +802,7 @@
             //
             var fmtObj = {
               dir: dir,
-              dist: ((i+1) % distance.length),
+              dist: dist,
               nextStr: nextStr
             };
             var fmtKey = btoa(JSON.stringify(fmtObj));
@@ -806,7 +852,7 @@
             var fmtObj = {
               dir: dir,
               dist: dist,
-              nextStr: ((i+1) % nextStreets.length)
+              nextStr: nextStreets[(i+1) % nextStreets.length]
             };
             var fmtKey = btoa(JSON.stringify(fmtObj));
             window.fmtSoundData[fmtKey] = fmtObj;
@@ -827,7 +873,7 @@
             streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, data[dist], "text-bg-warning"));
             streetFmt = streetFmt.replace("%2$s", streetDir);
             streetFmt = streetFmt.replace("%3$s", buildTranStringInput('onto', data['onto'], "text-bg-info"));
-            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", nextStreets[(i+1) % nextStreets.length], "text-bg-secondary", false)); // non-editable
+            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", fmtObj.nextStr, "text-bg-secondary", false)); // non-editable
             streetFmt = streetFmt.replace("%5$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
 
             $("#out-g").append(inputPre +
@@ -877,6 +923,7 @@
 
             var dir = fmtObj.dir;
             var dist = fmtObj.dist;
+            var onto = fmtObj.onto;
             var nextStr = fmtObj.nextStr;
 
             //
@@ -898,11 +945,14 @@
 
             streetFmt = streetFmt.replace("%1$s", buildTranStringInput(dist, window.modifiedSoundData[dist], "text-bg-warning"));
             streetFmt = streetFmt.replace("%2$s", streetDir);
-            streetFmt = streetFmt.replace("%3$s", buildTranStringInput('onto', window.modifiedSoundData['onto'], "text-bg-info"));
-            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", nextStreets[nextStr], "text-bg-secondary", false)); // non-editable
+            streetFmt = streetFmt.replace("%3$s", buildTranStringInput('onto', window.modifiedSoundData[onto], "text-bg-info"));
+            streetFmt = streetFmt.replace("%4$s", buildTranStringInput("", nextStr, "text-bg-secondary", false)); // non-editable
             streetFmt = streetFmt.replace("%5$s", buildTranStringInput(dir+"_street_verb", streetDirVerb, "text-bg-danger")); //optional
 
-            $(o).parent().parent().html(streetFmt);
+            var oldEl = $(o).parent();
+            var parent = $(oldEl).parent();
+            oldEl.remove(); // remove ourselves
+            parent.prepend(streetFmt); // prepend new html
           });
 
           $("#submitpopup textarea").text("Translation change request:\n```\n"+
@@ -920,7 +970,7 @@
       }
 
       function loadLocale(){
-        var commitHash = "1bf45f09395f67c9c5ebaa0c1d4ab7a52889bc50";
+        var commitHash = "a8611eb2a09e04a37b9bfd245bf8394d0ab818ee";
         var sourceUrl = "https://raw.githubusercontent.com/organicmaps/organicmaps/"+commitHash+"/data/strings/sound.txt";
 
         $("#sourceUrl").attr("href", sourceUrl).text("sound.txt");
