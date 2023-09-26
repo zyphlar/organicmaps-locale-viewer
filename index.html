@@ -274,75 +274,6 @@
             console.log("no text parser match:", line);
           }
         }
-
-        out["ja"]["onto"] = ""; // replace onto with _street_verb
-        out["ja"]["take_the_1_exit_street"] = "に出ます。";
-        out["ja"]["take_the_1_exit_street_verb"] = "1番出口を出て";
-        out["ja"]["take_the_2_exit_street"] = "に出ます。";
-        out["ja"]["take_the_2_exit_street_verb"] = "2番出口を出て";
-        out["ja"]["take_the_3_exit_street"] = "に出ます。";
-        out["ja"]["take_the_3_exit_street_verb"] = "3番出口を出て";
-        out["ja"]["take_the_4_exit_street"] = "に出ます。";
-        out["ja"]["take_the_4_exit_street_verb"] = "4番出口を出て";
-        out["ja"]["take_the_5_exit_street"] = "に出ます。";
-        out["ja"]["take_the_5_exit_street_verb"] = "5番出口を出て";
-        out["ja"]["take_the_6_exit_street"] = "に出ます。";
-        out["ja"]["take_the_6_exit_street_verb"] = "6番出口を出て";
-        out["ja"]["take_the_7_exit_street"] = "に出ます。";
-        out["ja"]["take_the_7_exit_street_verb"] = "7番出口を出て";
-        out["ja"]["take_the_8_exit_street"] = "に出ます。";
-        out["ja"]["take_the_8_exit_street_verb"] = "8番出口を出て";
-        out["ja"]["take_the_9_exit_street"] = "に出ます。";
-        out["ja"]["take_the_9_exit_street_verb"] = "9番出口を出て";
-        out["ja"]["take_the_10_exit_street"] = "に出ます。";
-        out["ja"]["take_the_10_exit_street_verb"] = "10番出口を出て";
-        out["ja"]["take_the_11_exit_street"] = "に出ます。";
-        out["ja"]["take_the_11_exit_street_verb"] = "11番出口を出て";
-        // out["ja"]["make_a_slight_right_turn_street_verb"] = 
-        // out["ja"]["make_a_slight_right_turn_street"] = "に入ります";
-        // out["ja"]["make_a_right_turn_street_verb"] = 
-        // out["ja"]["make_a_right_turn_street"] = "に入ります";
-        // out["ja"]["make_a_sharp_right_turn_street_verb"] = 
-        // out["ja"]["make_a_sharp_right_turn_street"] = "に入ります";
-        out["ja"]["enter_the_roundabout_street_verb"] = "ラウンドアバウトに入り、";
-        out["ja"]["enter_the_roundabout_street"] = "に入ります。";
-        out["ja"]["leave_the_roundabout_street_verb"] = "ラウンドアバウトを出て、";
-        out["ja"]["leave_the_roundabout_street"] = "に出ます。";
-        // out["ja"]["make_a_slight_left_turn_street_verb"] = 
-        // out["ja"]["make_a_slight_left_turn_street"] = "に入ります";
-        // out["ja"]["make_a_left_turn_street_verb"] = 
-        // out["ja"]["make_a_left_turn_street"] = "に入ります";
-        // out["ja"]["make_a_sharp_left_turn_street_verb"] = 
-        // out["ja"]["make_a_sharp_left_turn_street"] = "に入ります";
-        out["ja"]["make_a_u_turn_street_verb"] = "後ろ方向して";
-        out["ja"]["make_a_u_turn_street"] = "に入ります。";
-        // out["ja"]["go_straight_street_verb"] = 
-        // out["ja"]["go_straight_street"] = "に入ります";
-        // out["ja"]["exit_street_verb"] = 
-        // out["ja"]["exit_street"] = "出口です。";
-        out["ja"]["take_exit_number_street"] = "";
-        out["ja"]["take_exit_number"] = "出口を出る。";
-        out["ja"]["take_exit_number_street_verb"] = "";
-
-        out["ja"]["take_the_1_exit"] = "1番出口を出て。";
-        out["ja"]["take_the_2_exit"] = "2番出口を出て。";
-        out["ja"]["take_the_3_exit"] = "3番出口を出て。";
-        out["ja"]["take_the_4_exit"] = "4番出口を出て。";
-        out["ja"]["take_the_5_exit"] = "5番出口を出て。";
-        out["ja"]["take_the_6_exit"] = "6番出口を出て。";
-        out["ja"]["take_the_7_exit"] = "7番出口を出て。";
-        out["ja"]["take_the_8_exit"] = "8番出口を出て。";
-        out["ja"]["take_the_9_exit"] = "9番出口を出て。";
-        out["ja"]["take_the_10_exit"] = "10番出口を出て。";
-        out["ja"]["take_the_11_exit"] = "11番出口を出て。";
-
-        out["ja"]["enter_the_roundabout"] = "ラウンドアバウトに入り。";
-        out["ja"]["leave_the_roundabout"] = "ラウンドアバウトを出て。";
-
-        out["ja"]["make_a_u_turn"] = "後ろ方向です。";
-        // out["ja"]["go_straight"] = "さらに直進です。"; // TODO: prepend この先 for immediacy, その先 for later
-
-        out["ja"]["dist_direction_onto_street"] = "%1$s %5$s %4$s %3$s %2$s";
         console.log(out);
 
         return out;
@@ -1040,7 +971,7 @@
       }
 
       function loadLocale(){
-        var commitHash = "a8611eb2a09e04a37b9bfd245bf8394d0ab818ee";
+        var commitHash = "b59e607af40e7d88a49f29a1df1b83005291547d";
         var sourceUrl = "https://raw.githubusercontent.com/organicmaps/organicmaps/"+commitHash+"/data/strings/sound.txt";
 
         $("#sourceUrl").attr("href", sourceUrl).text("sound.txt");
