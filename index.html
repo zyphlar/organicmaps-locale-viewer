@@ -766,7 +766,11 @@
             };
             var fmtKey = btoa(JSON.stringify(fmtObj));
             window.fmtSoundData[fmtKey] = fmtObj;
+            if (!data['dist_direction_onto_street']) {
+              data['dist_direction_onto_street'] = window.originalEnglishData['dist_direction_onto_street'];
+            }
             var streetFmt = buildFmtStringInput('dist_direction_onto_street', data['dist_direction_onto_street'], "text-bg-dark", fmtKey);
+            // handle empty translations
 
             var streetDir;
             // overwrite the direction string if present for street TTS
